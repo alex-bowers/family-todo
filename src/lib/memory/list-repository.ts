@@ -1,24 +1,14 @@
 import { cacheStore } from '$lib/memory/cache';
-import type { TodoList, UUID } from '$lib/memory/types';
+import { fromSupabaseList, type SupabaseListRow, type TodoList, type UUID } from '$lib/memory/types';
 import { DELETE_LIST, GET_LISTS, CREATE_LIST } from '$lib/graphql/operations';
 import { hasuraClient, type HasuraClient } from '$lib/graphql/client';
 
-type GraphqlList = {
-  id: string;
-  household_id: string;
-  title: string;
-  sort_order: number;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-};
-
 interface GetListsResponse {
-  todo_lists: GraphqlList[];
+  todo_lists: SupabaseListRow[];
 }
 
 interface CreateListResponse {
-  insert_todo_lists_one: GraphqlList;
+  insert_todo_lists_one: SupabaseListRow;
 }
 
 interface DeleteListResponse {
@@ -26,18 +16,6 @@ interface DeleteListResponse {
     id: string;
     deleted_at: string | null;
   } | null;
-}
-
-function fromGraphql(row: GraphqlList): TodoList {
-  return {
-    id: row.id,
-    householdId: row.household_id,
-    title: row.title,
-    sortOrder: row.sort_order,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    deletedAt: row.deleted_at
-  };
 }
 
 function nonDeleted(lists: TodoList[]): TodoList[] {
@@ -65,7 +43,7 @@ export class ListRepository {
   async getLists(householdId: UUID): Promise<TodoList[]> {
     if (this.client) {
       const result = await this.client.request<GetListsResponse>(GET_LISTS, { householdId });
-      const mapped = result.todo_lists.map(fromGraphql);
+      const mapped = result.todo_lists.map(fromSupabaseList);
       this.writeLocal(householdId, mapped);
       return nonDeleted(mapped);
     }
@@ -88,7 +66,7 @@ export class ListRepository {
         title: trimmed,
         sortOrder
       });
-      const created = fromGraphql(result.insert_todo_lists_one);
+      const created = fromSupabaseList(result.insert_todo_lists_one);
       this.writeLocal(householdId, [...existing, created]);
       return created;
     }

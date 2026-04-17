@@ -20,9 +20,31 @@
   let syncStatus = 'online synced';
   let stopRealtime = () => {};
 
+  async function sendQueuedMutation(mutation) {
+    const payload = mutation.payload ?? {};
+
+    switch (mutation.op) {
+      case 'create_item':
+        await repository.createItem(payload.listId ?? listId, payload.description ?? '');
+        return;
+      case 'update_item':
+        if (typeof payload.isCompleted === 'boolean') {
+          await repository.setItemCompletion(payload.itemId, payload.isCompleted);
+        } else {
+          await repository.updateItemText(payload.itemId, payload.description ?? '');
+        }
+        return;
+      case 'delete_item':
+        await repository.deleteItem(payload.itemId);
+        return;
+      default:
+        return;
+    }
+  }
+
   async function flushQueue() {
     syncStatus = 'online syncing';
-    const result = await queue.flush(async () => Promise.resolve());
+    const result = await queue.flush(sendQueuedMutation);
     syncStatus = result.failed === 0 ? 'online synced' : 'online error';
   }
 
@@ -81,6 +103,11 @@
         syncStatus = 'offline queued';
       },
       onPoll: async () => {
+        if (navigator.onLine) {
+          await store.load();
+        }
+      },
+      onRealtimeEvent: async () => {
         if (navigator.onLine) {
           await store.load();
         }
