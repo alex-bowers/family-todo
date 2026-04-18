@@ -1,4 +1,4 @@
-const APP_CACHE = 'familytodo-app-v1';
+const APP_CACHE = 'familytodo-app-v2';
 const ASSET_PATHS = ['/', '/manifest.webmanifest', '/icons/icon.svg'];
 
 self.addEventListener('install', (event) => {

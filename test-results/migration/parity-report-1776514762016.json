@@ -1,0 +1,12 @@
+{
+  "generatedAt": "2026-04-18T12:19:22.016Z",
+  "checks": {
+    "rowCountParity": "pass",
+    "keySetParity": "pass",
+    "fingerprintParity": "pass",
+    "referentialIntegrity": "pass",
+    "duplicateDetection": "pass",
+    "idempotency": "pass"
+  },
+  "mismatches": []
+}

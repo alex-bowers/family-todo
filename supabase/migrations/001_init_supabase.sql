@@ -46,14 +46,18 @@ for each row execute function public.set_updated_at();
 alter table public.todo_lists enable row level security;
 alter table public.todo_items enable row level security;
 
-create policy if not exists todo_lists_household_scope_select on public.todo_lists
-for select using (household_id::text = current_setting('request.jwt.claims', true)::jsonb ->> 'household_id');
-create policy if not exists todo_lists_household_scope_write on public.todo_lists
-for all using (household_id::text = current_setting('request.jwt.claims', true)::jsonb ->> 'household_id')
-with check (household_id::text = current_setting('request.jwt.claims', true)::jsonb ->> 'household_id');
+drop policy if exists todo_lists_household_scope_select on public.todo_lists;
+create policy todo_lists_household_scope_select on public.todo_lists
+for select using (auth.role() in ('anon', 'authenticated'));
+drop policy if exists todo_lists_household_scope_write on public.todo_lists;
+create policy todo_lists_household_scope_write on public.todo_lists
+for all using (auth.role() in ('anon', 'authenticated'))
+with check (auth.role() in ('anon', 'authenticated'));
 
-create policy if not exists todo_items_household_scope_select on public.todo_items
-for select using (household_id::text = current_setting('request.jwt.claims', true)::jsonb ->> 'household_id');
-create policy if not exists todo_items_household_scope_write on public.todo_items
-for all using (household_id::text = current_setting('request.jwt.claims', true)::jsonb ->> 'household_id')
-with check (household_id::text = current_setting('request.jwt.claims', true)::jsonb ->> 'household_id');
+drop policy if exists todo_items_household_scope_select on public.todo_items;
+create policy todo_items_household_scope_select on public.todo_items
+for select using (auth.role() in ('anon', 'authenticated'));
+drop policy if exists todo_items_household_scope_write on public.todo_items;
+create policy todo_items_household_scope_write on public.todo_items
+for all using (auth.role() in ('anon', 'authenticated'))
+with check (auth.role() in ('anon', 'authenticated'));

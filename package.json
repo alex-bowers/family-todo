@@ -13,6 +13,8 @@
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
+    "deploy:branch": "npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch $(git rev-parse --abbrev-ref HEAD)",
+    "deploy:prod": "npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch main",
     "migration:dry-run": "tsx scripts/migration/migrate-hasura-to-supabase.ts --dry-run --output test-results/migration",
     "migration:verify": "tsx scripts/migration/verify-parity.ts test-results/migration"
   },
@@ -36,6 +38,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.1",
     "vite": "^6.3.5",
-    "vitest": "^3.1.2"
+    "vitest": "^3.1.2",
+    "wrangler": "^4.83.0"
   }
 }

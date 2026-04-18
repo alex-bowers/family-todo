@@ -4,16 +4,13 @@ export interface SupabaseRuntimeConfig {
   serviceRoleKey?: string;
 }
 
-function readEnv(name: string): string {
-  const value = import.meta.env[name];
-  return typeof value === 'string' ? value : '';
-}
-
 export function getSupabaseRuntimeConfig(): SupabaseRuntimeConfig {
+  const { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } = import.meta.env;
+
   return {
-    url: readEnv('PUBLIC_SUPABASE_URL'),
-    anonKey: readEnv('PUBLIC_SUPABASE_ANON_KEY'),
-    serviceRoleKey: readEnv('SUPABASE_SERVICE_ROLE_KEY') || undefined
+    url: typeof PUBLIC_SUPABASE_URL === 'string' ? PUBLIC_SUPABASE_URL : '',
+    anonKey: typeof PUBLIC_SUPABASE_ANON_KEY === 'string' ? PUBLIC_SUPABASE_ANON_KEY : '',
+    serviceRoleKey: typeof SUPABASE_SERVICE_ROLE_KEY === 'string' ? SUPABASE_SERVICE_ROLE_KEY : undefined
   };
 }
 
