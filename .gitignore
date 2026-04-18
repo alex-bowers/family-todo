@@ -1,9 +1,11 @@
 node_modules/
 .svelte-kit/
+.wrangler/
 .cloudflare/
 dist/
 build/
 coverage/
+test-results/migration/*.json
 *.log
 .env
 .env.*
