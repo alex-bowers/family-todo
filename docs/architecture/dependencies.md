@@ -7,6 +7,11 @@ constitution principle that dependencies must be intentional and minimal.
 
 ## Current Dependencies
 
+- @supabase/supabase-js
+Reason: Unified backend client for Postgres-backed data APIs and realtime integration after replacing Hasura.
+Native alternative considered: Custom fetch wrapper against REST/RPC endpoints.
+Decision: Rejected because it duplicates client behavior (auth/session/realtime ergonomics) already supported by the maintained SDK.
+
 - @sveltejs/kit
 Reason: Core framework for routing, rendering, and PWA-oriented app architecture.
 Native alternative considered: Hand-built Vite SPA with custom routing and hydration.

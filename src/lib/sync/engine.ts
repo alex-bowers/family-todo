@@ -1,7 +1,7 @@
 import type { PendingMutation, SyncSnapshot, UUID } from '$lib/memory/types';
 import { cacheStore } from '$lib/memory/cache';
 import { GET_CHANGES_SINCE } from '$lib/graphql/operations';
-import { hasuraClient } from '$lib/graphql/client';
+import { hasuraClient, hasuraConfigured } from '$lib/graphql/client';
 
 interface ChangesSincePayload {
   changedLists: SyncSnapshot['lists'];
@@ -10,6 +10,10 @@ interface ChangesSincePayload {
 
 function latestTs(...timestamps: string[]): string {
   return timestamps.sort((a, b) => a.localeCompare(b)).at(-1) ?? new Date().toISOString();
+}
+
+function sortByUpdatedAt<T extends { updatedAt: string }>(rows: T[]): T[] {
+  return rows.sort((a, b) => a.updatedAt.localeCompare(b.updatedAt));
 }
 
 export class SyncEngine {
@@ -32,6 +36,16 @@ export class SyncEngine {
     const currentSnapshot = cacheStore.readSnapshot(this.householdId);
     const cursor = cacheStore.readCursor(this.householdId);
     const since = cursor?.lastSyncedAt ?? new Date(0).toISOString();
+
+    if (!hasuraConfigured()) {
+      const fallback: SyncSnapshot = {
+        lists: currentSnapshot?.lists ?? [],
+        items: currentSnapshot?.items ?? [],
+        serverTs: currentSnapshot?.serverTs ?? since
+      };
+      cacheStore.writeSnapshot(this.householdId, fallback);
+      return fallback;
+    }
 
     const data = await hasuraClient.request<ChangesSincePayload>(GET_CHANGES_SINCE, {
       householdId: this.householdId,
@@ -63,8 +77,8 @@ export class SyncEngine {
     );
 
     const mergedSnapshot: SyncSnapshot = {
-      lists: [...mergedLists.values()],
-      items: [...mergedItems.values()],
+      lists: sortByUpdatedAt([...mergedLists.values()]),
+      items: sortByUpdatedAt([...mergedItems.values()]),
       serverTs
     };
 
@@ -89,8 +103,13 @@ export class SyncEngine {
       try {
         await send(mutation);
         sent += 1;
-      } catch {
-        pending.push(mutation);
+      } catch (error) {
+        pending.push({
+          ...mutation,
+          retries: (mutation.retries ?? 0) + 1,
+          lastError: error instanceof Error ? error.message : 'sync send failed',
+          nextAttemptAt: new Date(Date.now() + Math.min(30_000, 2 ** (mutation.retries ?? 0) * 500)).toISOString()
+        });
       }
     }
 

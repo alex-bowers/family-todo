@@ -1,5 +1,8 @@
 # Contract: Hasura GraphQL Interface
 
+> Deprecated for active development. Supabase contract is now canonical in
+> `specs/002-swap-hasura-supabase/contracts/supabase-data-api-contract.md`.
+
 ## Purpose
 Defines the required GraphQL operations between FamilyToDo (SvelteKit PWA) and Hasura shared memory backend.
 

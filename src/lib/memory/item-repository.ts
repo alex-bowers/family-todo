@@ -7,29 +7,18 @@ import {
   UPDATE_ITEM_TEXT
 } from '$lib/graphql/operations';
 import { cacheStore } from '$lib/memory/cache';
-import type { TodoItem, UUID } from '$lib/memory/types';
-
-type GraphqlItem = {
-  id: string;
-  list_id: string;
-  description: string;
-  is_completed: boolean;
-  completed_at: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-};
+import { fromSupabaseItem, type SupabaseItemRow, type TodoItem, type UUID } from '$lib/memory/types';
 
 interface GetItemsResponse {
-  todo_items: GraphqlItem[];
+  todo_items: SupabaseItemRow[];
 }
 
 interface CreateItemResponse {
-  insert_todo_items_one: GraphqlItem;
+  insert_todo_items_one: SupabaseItemRow;
 }
 
 interface UpdateItemResponse {
-  update_todo_items_by_pk: GraphqlItem | null;
+  update_todo_items_by_pk: SupabaseItemRow | null;
 }
 
 interface DeleteItemResponse {
@@ -37,19 +26,6 @@ interface DeleteItemResponse {
     id: string;
     deleted_at: string | null;
   } | null;
-}
-
-function fromGraphql(row: GraphqlItem): TodoItem {
-  return {
-    id: row.id,
-    listId: row.list_id,
-    description: row.description,
-    isCompleted: row.is_completed,
-    completedAt: row.completed_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    deletedAt: row.deleted_at
-  };
 }
 
 function activeSorted(items: TodoItem[]): TodoItem[] {
@@ -80,7 +56,7 @@ export class ItemRepository {
   async getItems(listId: UUID): Promise<TodoItem[]> {
     if (this.client) {
       const result = await this.client.request<GetItemsResponse>(GET_ITEMS_BY_LIST, { listId });
-      const mapped = result.todo_items.map(fromGraphql);
+      const mapped = result.todo_items.map(fromSupabaseItem);
       const local = this.readLocal().filter((item) => item.listId !== listId);
       this.writeLocal([...local, ...mapped]);
       return activeSorted(mapped);
@@ -100,9 +76,10 @@ export class ItemRepository {
     if (this.client) {
       const result = await this.client.request<CreateItemResponse>(CREATE_ITEM, {
         listId,
+        householdId: this.householdId,
         description: trimmed
       });
-      const created = fromGraphql(result.insert_todo_items_one);
+      const created = fromSupabaseItem(result.insert_todo_items_one);
       this.writeLocal([...existing, created]);
       return created;
     }
@@ -134,14 +111,15 @@ export class ItemRepository {
     if (this.client) {
       const result = await this.client.request<UpdateItemResponse>(UPDATE_ITEM_TEXT, {
         itemId,
-        description: trimmed
+        description: trimmed,
+        expectedUpdatedAt: existing.find((item) => item.id === itemId)?.updatedAt
       });
 
       if (!result.update_todo_items_by_pk) {
         throw new Error('Item not found');
       }
 
-      const updated = fromGraphql(result.update_todo_items_by_pk);
+      const updated = fromSupabaseItem(result.update_todo_items_by_pk);
       this.writeLocal(existing.map((item) => (item.id === itemId ? updated : item)));
       return updated;
     }
@@ -168,14 +146,15 @@ export class ItemRepository {
       const result = await this.client.request<UpdateItemResponse>(SET_ITEM_COMPLETION, {
         itemId,
         isCompleted,
-        completedAt: isCompleted ? new Date().toISOString() : null
+        completedAt: isCompleted ? new Date().toISOString() : null,
+        expectedUpdatedAt: existing.find((item) => item.id === itemId)?.updatedAt
       });
 
       if (!result.update_todo_items_by_pk) {
         throw new Error('Item not found');
       }
 
-      const updated = fromGraphql(result.update_todo_items_by_pk);
+      const updated = fromSupabaseItem(result.update_todo_items_by_pk);
       this.writeLocal(existing.map((item) => (item.id === itemId ? updated : item)));
       return updated;
     }
@@ -203,7 +182,8 @@ export class ItemRepository {
     if (this.client) {
       await this.client.request<DeleteItemResponse>(DELETE_ITEM, {
         itemId,
-        deletedAt: new Date().toISOString()
+        deletedAt: new Date().toISOString(),
+        expectedUpdatedAt: existing.find((item) => item.id === itemId)?.updatedAt
       });
     }
 

@@ -56,3 +56,35 @@ export function makeHasuraError(message = 'permission denied'): HasuraGraphqlErr
     ]
   };
 }
+
+export const MIGRATION_PARITY_SOURCE = {
+  lists: [
+    {
+      id: FIXTURE_LIST_ID,
+      household_id: FIXTURE_HOUSEHOLD_ID,
+      title: 'Groceries',
+      sort_order: 0,
+      created_at: '2026-04-17T00:00:00.000Z',
+      updated_at: '2026-04-17T00:00:00.000Z',
+      deleted_at: null
+    }
+  ],
+  items: [
+    {
+      id: FIXTURE_ITEM_ID,
+      household_id: FIXTURE_HOUSEHOLD_ID,
+      list_id: FIXTURE_LIST_ID,
+      description: 'Buy milk',
+      is_completed: false,
+      completed_at: null,
+      created_at: '2026-04-17T00:00:00.000Z',
+      updated_at: '2026-04-17T00:00:00.000Z',
+      deleted_at: null
+    }
+  ]
+};
+
+export const MIGRATION_PARITY_TARGET = {
+  lists: [...MIGRATION_PARITY_SOURCE.lists],
+  items: [...MIGRATION_PARITY_SOURCE.items]
+};

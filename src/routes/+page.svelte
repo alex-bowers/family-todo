@@ -6,6 +6,7 @@
   import { ListStore } from '$lib/stores/list-store';
   import { SyncEngine } from '$lib/sync/engine';
   import { setupListRefreshOnReconnect } from '$lib/sync/list-sync';
+  import { hasuraConfigured } from '$lib/graphql/client';
 
   const householdId = resolveHouseholdId();
   const deviceId = resolveDeviceId();
@@ -17,6 +18,7 @@
 
   const listState = store;
   let hydrated = false;
+  const backendConfigured = hasuraConfigured();
 
   onMount(async () => {
     hydrated = true;
@@ -40,6 +42,11 @@
 <main>
   <h1>FamilyToDo</h1>
   <p>Shared family lists with cross-device memory.</p>
+  {#if !backendConfigured}
+    <p role="status" aria-live="polite" class="migration-warning">
+      Running in offline-compatible mode while Supabase configuration is incomplete.
+    </p>
+  {/if}
   <p data-testid="hydrated" hidden={!hydrated}>ready</p>
 
   <section class="layout">
@@ -86,6 +93,14 @@
     border-radius: 0.75rem;
     padding: 1rem;
     background: #fff;
+  }
+
+  .migration-warning {
+    border: 1px solid #d97706;
+    background: #fffbeb;
+    color: #92400e;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
   }
 
   @media (max-width: 800px) {

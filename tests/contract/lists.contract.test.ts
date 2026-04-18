@@ -1,9 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { HasuraClient } from '$lib/graphql/client';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ListRepository } from '$lib/memory/list-repository';
-import { makeHasuraSuccess, makeList, FIXTURE_HOUSEHOLD_ID, FIXTURE_LIST_ID } from './fixtures/hasura-fixtures';
+import {
+  FIXTURE_HOUSEHOLD_ID,
+  FIXTURE_LIST_ID,
+  makeList
+} from './fixtures/hasura-fixtures';
 
-describe('List GraphQL contract', () => {
+describe('List repository contract', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.stubGlobal('localStorage', {
@@ -13,8 +16,8 @@ describe('List GraphQL contract', () => {
     });
   });
 
-  it('queries active lists with expected variables', async () => {
-    const payload = makeHasuraSuccess({
+  it('queries active lists with expected operation and variables', async () => {
+    const request = vi.fn(async () => ({
       todo_lists: [
         {
           id: FIXTURE_LIST_ID,
@@ -26,74 +29,50 @@ describe('List GraphQL contract', () => {
           deleted_at: null
         }
       ]
-    });
+    }));
 
-    const fetchMock = vi.fn(async () =>
-      new Response(JSON.stringify(payload), {
-        status: 200,
-        headers: { 'content-type': 'application/json' }
-      })
-    );
-    vi.stubGlobal('fetch', fetchMock);
-
-    const repository = new ListRepository(new HasuraClient('http://example.test/graphql'));
+    const repository = new ListRepository({ request } as never);
 
     const lists = await repository.getLists(FIXTURE_HOUSEHOLD_ID);
 
     expect(lists).toHaveLength(1);
     expect(lists[0].title).toBe('Groceries');
 
-    const body = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
-    expect(body.variables).toEqual({ householdId: FIXTURE_HOUSEHOLD_ID });
-    expect(body.query).toContain('query GetLists');
+    expect(request).toHaveBeenCalledWith('GetLists', {
+      householdId: FIXTURE_HOUSEHOLD_ID
+    });
   });
 
-  it('creates and soft-deletes list via GraphQL mutations', async () => {
+  it('creates and soft-deletes list via repository operations', async () => {
     const created = makeList();
-    const fetchMock = vi
+    const request = vi
       .fn()
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify(
-            makeHasuraSuccess({
-              insert_todo_lists_one: {
-                id: created.id,
-                household_id: created.householdId,
-                title: created.title,
-                sort_order: created.sortOrder,
-                created_at: created.createdAt,
-                updated_at: created.updatedAt,
-                deleted_at: null
-              }
-            })
-          ),
-          { status: 200, headers: { 'content-type': 'application/json' } }
-        )
-      )
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify(
-            makeHasuraSuccess({
-              update_todo_lists_by_pk: { id: created.id, deleted_at: new Date().toISOString() }
-            })
-          ),
-          { status: 200, headers: { 'content-type': 'application/json' } }
-        )
-      );
+      .mockResolvedValueOnce({
+        insert_todo_lists_one: {
+          id: created.id,
+          household_id: created.householdId,
+          title: created.title,
+          sort_order: created.sortOrder,
+          created_at: created.createdAt,
+          updated_at: created.updatedAt,
+          deleted_at: null
+        }
+      })
+      .mockResolvedValueOnce({
+        update_todo_lists_by_pk: { id: created.id, deleted_at: new Date().toISOString() }
+      });
 
-    vi.stubGlobal('fetch', fetchMock);
-
-    const repository = new ListRepository(new HasuraClient('http://example.test/graphql'));
+    const repository = new ListRepository({ request } as never);
 
     const inserted = await repository.createList(FIXTURE_HOUSEHOLD_ID, 'Groceries');
     await repository.deleteList(inserted.id, FIXTURE_HOUSEHOLD_ID);
 
-    const createBody = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
-    const deleteBody = JSON.parse((fetchMock.mock.calls[1]?.[1] as RequestInit).body as string);
-
-    expect(createBody.query).toContain('mutation CreateList');
-    expect(createBody.variables.householdId).toBe(FIXTURE_HOUSEHOLD_ID);
-    expect(deleteBody.query).toContain('mutation DeleteList');
-    expect(deleteBody.variables.listId).toBe(inserted.id);
+    expect(request).toHaveBeenNthCalledWith(1, 'CreateList', {
+      householdId: FIXTURE_HOUSEHOLD_ID,
+      title: 'Groceries',
+      sortOrder: 0
+    });
+    expect(request.mock.calls[1]?.[0]).toBe('DeleteList');
+    expect(request.mock.calls[1]?.[1].listId).toBe(inserted.id);
   });
 });
