@@ -5,6 +5,7 @@ node_modules/
 dist/
 build/
 coverage/
+test-results/.last-run.json
 test-results/migration/*.json
 *.log
 .env
