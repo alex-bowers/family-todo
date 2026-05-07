@@ -8,6 +8,7 @@ import {
 } from '$lib/graphql/operations';
 import { cacheStore } from '$lib/memory/cache';
 import { fromSupabaseItem, type SupabaseItemRow, type TodoItem, type UUID } from '$lib/memory/types';
+import { sortItemsForDisplay } from '$lib/utils/item-ordering';
 
 interface GetItemsResponse {
   todo_items: SupabaseItemRow[];
@@ -29,9 +30,7 @@ interface DeleteItemResponse {
 }
 
 function activeSorted(items: TodoItem[]): TodoItem[] {
-  return items
-    .filter((item) => !item.deletedAt)
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  return sortItemsForDisplay(items.filter((item) => !item.deletedAt));
 }
 
 export class ItemRepository {

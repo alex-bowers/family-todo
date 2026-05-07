@@ -1,6 +1,7 @@
 import { get, writable } from 'svelte/store';
 import type { TodoItem, UUID } from '$lib/memory/types';
 import { ItemRepository } from '$lib/memory/item-repository';
+import { sortItemsForDisplay } from '$lib/utils/item-ordering';
 
 export interface ItemState {
   items: TodoItem[];
@@ -46,25 +47,11 @@ export class ItemStore {
 
     const next = items.slice();
     next[index] = nextItem;
-    return next;
+    return sortItemsForDisplay(next);
   }
 
-  private insertItemByCreatedAt(items: TodoItem[], created: TodoItem): TodoItem[] {
-    if (items.length === 0) {
-      return [created];
-    }
-
-    const last = items[items.length - 1];
-    if (last && last.createdAt <= created.createdAt) {
-      return [...items, created];
-    }
-
-    const insertionIndex = items.findIndex((item) => item.createdAt > created.createdAt);
-    if (insertionIndex === -1) {
-      return [...items, created];
-    }
-
-    return [...items.slice(0, insertionIndex), created, ...items.slice(insertionIndex)];
+  private insertItem(items: TodoItem[], created: TodoItem): TodoItem[] {
+    return sortItemsForDisplay([...items, created]);
   }
 
   private setError(error: unknown): void {
@@ -80,7 +67,7 @@ export class ItemStore {
 
     try {
       const items = await this.repository.getItems(this.listId);
-      this.state.set({ items, loading: false, error: null });
+      this.state.set({ items: sortItemsForDisplay(items), loading: false, error: null });
     } catch (error) {
       this.setError(error);
     }
@@ -94,7 +81,7 @@ export class ItemStore {
       this.state.update((current) => ({
         ...current,
         loading: false,
-        items: this.insertItemByCreatedAt(current.items, created)
+        items: this.insertItem(current.items, created)
       }));
     } catch (error) {
       this.setError(error);
@@ -139,7 +126,7 @@ export class ItemStore {
       this.state.update((current) => ({
         ...current,
         loading: false,
-        items: current.items.filter((item) => item.id !== itemId)
+        items: sortItemsForDisplay(current.items.filter((item) => item.id !== itemId))
       }));
     } catch (error) {
       this.setError(error);
