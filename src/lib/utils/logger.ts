@@ -2,7 +2,7 @@ type LogContext = Record<string, unknown>;
 
 function formatContext(context?: LogContext): string {
   if (!context || Object.keys(context).length === 0) {
-    return '';
+    return "";
   }
 
   return ` ${JSON.stringify(context)}`;
@@ -19,5 +19,5 @@ export const logger = {
 
   error(message: string, context?: LogContext): void {
     console.error(`[familytodo] ${message}${formatContext(context)}`);
-  }
+  },
 };

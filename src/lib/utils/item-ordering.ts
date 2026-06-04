@@ -1,12 +1,14 @@
-import type { TodoItem } from '$lib/memory/types';
-import { toSortText } from '$lib/utils/item-text';
+import type { TodoItem } from "$lib/memory/types";
+import { toSortText } from "$lib/utils/item-text";
 
 export function compareItemsForDisplay(a: TodoItem, b: TodoItem): number {
   if (a.isCompleted !== b.isCompleted) {
     return a.isCompleted ? 1 : -1;
   }
 
-  const byText = toSortText(a.description).localeCompare(toSortText(b.description));
+  const byText = toSortText(a.description).localeCompare(
+    toSortText(b.description),
+  );
   if (byText !== 0) {
     return byText;
   }

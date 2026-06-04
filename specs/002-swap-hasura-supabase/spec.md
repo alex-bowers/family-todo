@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: User description: "Swap Hasura implementation for Supabase. Instead of having a separate graphQL service and database, swap to a service that hosts the database and provides an API."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Preserve Family Task Workflows (Priority: P1)
 
@@ -60,7 +60,7 @@ As a project maintainer, I can operate the app on one managed backend platform t
 - A device reconnects with stale local changes immediately after migration cutover.
 - The unified backend API is temporarily unavailable after launch.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -79,7 +79,7 @@ As a project maintainer, I can operate the app on one managed backend platform t
 - **FR-013**: The migration release gate MUST include pre-cutover and post-cutover verification checks for row-count parity, key-set parity, fingerprint parity, duplicate detection, and referential integrity.
 - **FR-014**: Cross-device synchronization acceptance MUST validate convergence correctness and propagation latency using multi-context Playwright scenarios.
 
-## Testing Strategy & Release Gates *(mandatory)*
+## Testing Strategy & Release Gates _(mandatory)_
 
 ### Required Contract Tests (Vitest)
 
@@ -110,13 +110,13 @@ As a project maintainer, I can operate the app on one managed backend platform t
 - Offline replay threshold: zero dropped operations and zero duplicate replays in acceptance scenarios.
 - Release confidence threshold: all migration contract, verification, and E2E suites pass with no skipped required cases.
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **HouseholdList**: Represents a shared family list with attributes for identifier, name, ownership scope, and lifecycle timestamps.
 - **HouseholdItem**: Represents a task item linked to a list with attributes for identifier, text, completion state, and lifecycle timestamps.
 - **MigrationRun**: Represents a tracked migration attempt with attributes for start time, completion state, validation results, and recovery status.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

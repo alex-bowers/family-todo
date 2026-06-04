@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: User description: "Improve list usability. I would like uncompleted items to moved above completed items. It'd like items to be ordered alphabetically, which means uncompleted ordered, then completed ordered. I'd like the clickable areas within the items to be bigger as it's difficult to hit the checkbox. Finally, I'd like not duplicate items, which means there needs to be a search feature within the #new-item-description field and it must be clever enough to make edits to the existing item instead of creating a new one."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Find and Act on Incomplete Tasks Faster (Priority: P1)
 
@@ -61,7 +61,7 @@ As a household member, I can choose to reactivate an existing matched item as un
 - Very long item text still needs discoverable suggestions and tappable controls without layout breakage.
 - Rapid typing or offline mode temporarily prevents suggestion refresh.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -79,13 +79,13 @@ As a household member, I can choose to reactivate an existing matched item as un
 - **FR-012**: Any new dependency MUST include explicit justification and a simpler/native alternative assessment.
 - **FR-013**: Primary user journeys MUST avoid additional setup steps or configuration.
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **List Item**: A household task entry with description text, completion state, and list membership; used for ordering, matching, and updates.
 - **New Item Draft**: The in-progress text entered in the add-item field, used to drive suggestion lookup and duplicate-prevention decisions.
 - **Suggestion Match**: A ranked relationship between New Item Draft and one or more existing List Items that may represent a duplicate or edit target.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

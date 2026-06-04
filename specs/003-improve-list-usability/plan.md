@@ -23,7 +23,7 @@ Improve daily list interaction efficiency by sorting incomplete items first with
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 **Pre-Phase-0 Gate Assessment**
 
@@ -79,8 +79,8 @@ tests/
 No constitution violations requiring exception at plan time.
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| None | N/A | N/A |
+| --------- | ---------- | ------------------------------------ |
+| None      | N/A        | N/A                                  |
 
 ## Post-Design Constitution Check
 

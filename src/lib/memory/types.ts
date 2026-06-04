@@ -34,12 +34,12 @@ export interface SyncCursor {
 }
 
 export type MutationOp =
-  | 'create_list'
-  | 'update_list'
-  | 'delete_list'
-  | 'create_item'
-  | 'update_item'
-  | 'delete_item';
+  | "create_list"
+  | "update_list"
+  | "delete_list"
+  | "create_item"
+  | "update_item"
+  | "delete_item";
 
 export interface PendingMutation {
   id: string;
@@ -88,7 +88,7 @@ export function fromSupabaseList(row: SupabaseListRow): TodoList {
     sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    deletedAt: row.deleted_at
+    deletedAt: row.deleted_at,
   };
 }
 
@@ -101,6 +101,6 @@ export function fromSupabaseItem(row: SupabaseItemRow): TodoItem {
     completedAt: row.completed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    deletedAt: row.deleted_at
+    deletedAt: row.deleted_at,
   };
 }

@@ -11,11 +11,11 @@
 
 **Purpose**: Project initialization and baseline tooling for SvelteKit + Cloudflare Pages + PWA
 
-- [X] T001 Initialize SvelteKit project dependencies and scripts in package.json
-- [X] T002 Configure Cloudflare Pages adapter and build settings in svelte.config.js
-- [X] T003 [P] Configure linting and formatting rules in eslint.config.js
-- [X] T004 [P] Configure unit and E2E test runners in vite.config.ts
-- [X] T005 [P] Create baseline PWA manifest and icon references in static/manifest.webmanifest
+- [x] T001 Initialize SvelteKit project dependencies and scripts in package.json
+- [x] T002 Configure Cloudflare Pages adapter and build settings in svelte.config.js
+- [x] T003 [P] Configure linting and formatting rules in eslint.config.js
+- [x] T004 [P] Configure unit and E2E test runners in vite.config.ts
+- [x] T005 [P] Create baseline PWA manifest and icon references in static/manifest.webmanifest
 
 ---
 
@@ -25,16 +25,16 @@
 
 **⚠️ CRITICAL**: No user story implementation starts before this phase is complete
 
-- [X] T006 Create Hasura schema migration for households, lists, and items in hasura/migrations/001_init.sql
-- [X] T007 [P] Define GraphQL operations from contract in src/lib/graphql/operations.ts
-- [X] T008 [P] Implement GraphQL client and env wiring in src/lib/graphql/client.ts
-- [X] T009 Define shared domain types for memory entities in src/lib/memory/types.ts
-- [X] T010 [P] Implement local cache adapter for offline mirror in src/lib/memory/cache.ts
-- [X] T011 [P] Implement sync engine with last-write-wins policy in src/lib/sync/engine.ts
-- [X] T012 Implement household context/session resolver in src/lib/memory/household.ts
-- [X] T013 Configure global app error and logging helpers in src/lib/utils/logger.ts
-- [X] T014 Document dependency justification and minimal-stack decisions in docs/architecture/dependencies.md
-- [X] T015 Create reusable contract test fixtures for Hasura responses in tests/contract/fixtures/hasura-fixtures.ts
+- [x] T006 Create Hasura schema migration for households, lists, and items in hasura/migrations/001_init.sql
+- [x] T007 [P] Define GraphQL operations from contract in src/lib/graphql/operations.ts
+- [x] T008 [P] Implement GraphQL client and env wiring in src/lib/graphql/client.ts
+- [x] T009 Define shared domain types for memory entities in src/lib/memory/types.ts
+- [x] T010 [P] Implement local cache adapter for offline mirror in src/lib/memory/cache.ts
+- [x] T011 [P] Implement sync engine with last-write-wins policy in src/lib/sync/engine.ts
+- [x] T012 Implement household context/session resolver in src/lib/memory/household.ts
+- [x] T013 Configure global app error and logging helpers in src/lib/utils/logger.ts
+- [x] T014 Document dependency justification and minimal-stack decisions in docs/architecture/dependencies.md
+- [x] T015 Create reusable contract test fixtures for Hasura responses in tests/contract/fixtures/hasura-fixtures.ts
 
 **Checkpoint**: Foundation ready; user stories can proceed independently
 
@@ -48,18 +48,18 @@
 
 ### Tests for User Story 1 (REQUIRED)
 
-- [X] T016 [P] [US1] Add GraphQL contract tests for list queries/mutations in tests/contract/lists.contract.test.ts
-- [X] T017 [P] [US1] Add E2E test for list create/delete flow in tests/e2e/lists-flow.spec.ts
-- [X] T018 [P] [US1] Add unit tests for list store transitions in tests/unit/list-store.test.ts
+- [x] T016 [P] [US1] Add GraphQL contract tests for list queries/mutations in tests/contract/lists.contract.test.ts
+- [x] T017 [P] [US1] Add E2E test for list create/delete flow in tests/e2e/lists-flow.spec.ts
+- [x] T018 [P] [US1] Add unit tests for list store transitions in tests/unit/list-store.test.ts
 
 ### Implementation for User Story 1
 
-- [X] T019 [P] [US1] Implement list repository methods in src/lib/memory/list-repository.ts
-- [X] T020 [P] [US1] Implement list state store in src/lib/stores/list-store.ts
-- [X] T021 [US1] Build list sidebar and empty-state component in src/lib/components/ListSidebar.svelte
-- [X] T022 [US1] Wire list selection/create/delete actions in src/routes/+page.svelte
-- [X] T023 [US1] Add accessibility labels and focus behavior for list controls in src/lib/components/ListSidebar.svelte
-- [X] T024 [US1] Implement list refresh-on-reconnect sync hook in src/lib/sync/list-sync.ts
+- [x] T019 [P] [US1] Implement list repository methods in src/lib/memory/list-repository.ts
+- [x] T020 [P] [US1] Implement list state store in src/lib/stores/list-store.ts
+- [x] T021 [US1] Build list sidebar and empty-state component in src/lib/components/ListSidebar.svelte
+- [x] T022 [US1] Wire list selection/create/delete actions in src/routes/+page.svelte
+- [x] T023 [US1] Add accessibility labels and focus behavior for list controls in src/lib/components/ListSidebar.svelte
+- [x] T024 [US1] Implement list refresh-on-reconnect sync hook in src/lib/sync/list-sync.ts
 
 **Checkpoint**: User Story 1 is functional and independently testable
 
@@ -73,18 +73,18 @@
 
 ### Tests for User Story 2 (REQUIRED)
 
-- [X] T025 [P] [US2] Add GraphQL contract tests for item mutations/queries in tests/contract/items.contract.test.ts
-- [X] T026 [P] [US2] Add E2E test for item lifecycle in tests/e2e/items-flow.spec.ts
-- [X] T027 [P] [US2] Add unit tests for item completion display state in tests/unit/item-store.test.ts
+- [x] T025 [P] [US2] Add GraphQL contract tests for item mutations/queries in tests/contract/items.contract.test.ts
+- [x] T026 [P] [US2] Add E2E test for item lifecycle in tests/e2e/items-flow.spec.ts
+- [x] T027 [P] [US2] Add unit tests for item completion display state in tests/unit/item-store.test.ts
 
 ### Implementation for User Story 2
 
-- [X] T028 [P] [US2] Implement item repository methods in src/lib/memory/item-repository.ts
-- [X] T029 [P] [US2] Implement item state store in src/lib/stores/item-store.ts
-- [X] T030 [US2] Build item list/editor component with strike-through styling in src/lib/components/TodoItemList.svelte
-- [X] T031 [US2] Wire list-detail item actions in src/routes/lists/[listId]/+page.svelte
-- [X] T032 [US2] Add blank-value validation feedback for item edits in src/lib/components/TodoItemList.svelte
-- [X] T033 [US2] Add keyboard and focus handling for item actions in src/lib/components/TodoItemList.svelte
+- [x] T028 [P] [US2] Implement item repository methods in src/lib/memory/item-repository.ts
+- [x] T029 [P] [US2] Implement item state store in src/lib/stores/item-store.ts
+- [x] T030 [US2] Build item list/editor component with strike-through styling in src/lib/components/TodoItemList.svelte
+- [x] T031 [US2] Wire list-detail item actions in src/routes/lists/[listId]/+page.svelte
+- [x] T032 [US2] Add blank-value validation feedback for item edits in src/lib/components/TodoItemList.svelte
+- [x] T033 [US2] Add keyboard and focus handling for item actions in src/lib/components/TodoItemList.svelte
 
 **Checkpoint**: User Stories 1 and 2 both work independently
 
@@ -98,19 +98,19 @@
 
 ### Tests for User Story 3 (REQUIRED)
 
-- [X] T034 [P] [US3] Add GraphQL contract test for incremental sync query in tests/contract/sync.contract.test.ts
-- [X] T035 [P] [US3] Add E2E installability and launch test in tests/e2e/pwa-install.spec.ts
-- [X] T036 [P] [US3] Add E2E offline-then-reconnect sync test in tests/e2e/offline-sync.spec.ts
+- [x] T034 [P] [US3] Add GraphQL contract test for incremental sync query in tests/contract/sync.contract.test.ts
+- [x] T035 [P] [US3] Add E2E installability and launch test in tests/e2e/pwa-install.spec.ts
+- [x] T036 [P] [US3] Add E2E offline-then-reconnect sync test in tests/e2e/offline-sync.spec.ts
 
 ### Implementation for User Story 3
 
-- [X] T037 [P] [US3] Finalize PWA manifest metadata and icons in static/manifest.webmanifest
-- [X] T038 [P] [US3] Implement service worker cache/sync behavior in src/service-worker.ts
-- [X] T039 [US3] Build install prompt and unsupported-browser fallback in src/lib/components/PwaInstallPrompt.svelte
-- [X] T040 [US3] Mount install lifecycle handlers in src/routes/+layout.svelte
-- [X] T041 [US3] Implement realtime/polling bridge for cross-device updates in src/lib/sync/realtime.ts
-- [X] T042 [US3] Implement offline queue and replay-on-reconnect in src/lib/sync/offline-queue.ts
-- [X] T043 [US3] Add accessibility announcements for install/sync status in src/lib/components/PwaInstallPrompt.svelte
+- [x] T037 [P] [US3] Finalize PWA manifest metadata and icons in static/manifest.webmanifest
+- [x] T038 [P] [US3] Implement service worker cache/sync behavior in src/service-worker.ts
+- [x] T039 [US3] Build install prompt and unsupported-browser fallback in src/lib/components/PwaInstallPrompt.svelte
+- [x] T040 [US3] Mount install lifecycle handlers in src/routes/+layout.svelte
+- [x] T041 [US3] Implement realtime/polling bridge for cross-device updates in src/lib/sync/realtime.ts
+- [x] T042 [US3] Implement offline queue and replay-on-reconnect in src/lib/sync/offline-queue.ts
+- [x] T043 [US3] Add accessibility announcements for install/sync status in src/lib/components/PwaInstallPrompt.svelte
 
 **Checkpoint**: All three user stories are independently functional
 
@@ -120,11 +120,11 @@
 
 **Purpose**: Hardening, documentation, and quality improvements across stories
 
-- [X] T044 [P] Update Hasura setup and operational notes in specs/001-family-todo-pwa/quickstart.md
-- [X] T045 Harden GraphQL role/secret handling in src/lib/graphql/client.ts
-- [X] T046 [P] Optimize list and item render/update performance in src/lib/stores/item-store.ts
-- [X] T047 [P] Add regression E2E test for concurrent edit conflicts in tests/e2e/sync-conflict.spec.ts
-- [X] T048 Run full validation checklist and record outcomes in specs/001-family-todo-pwa/quickstart.md
+- [x] T044 [P] Update Hasura setup and operational notes in specs/001-family-todo-pwa/quickstart.md
+- [x] T045 Harden GraphQL role/secret handling in src/lib/graphql/client.ts
+- [x] T046 [P] Optimize list and item render/update performance in src/lib/stores/item-store.ts
+- [x] T047 [P] Add regression E2E test for concurrent edit conflicts in tests/e2e/sync-conflict.spec.ts
+- [x] T048 Run full validation checklist and record outcomes in specs/001-family-todo-pwa/quickstart.md
 
 ---
 

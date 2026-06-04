@@ -11,9 +11,9 @@
 
 **Purpose**: Prepare test harness and feature-scoped documentation alignment.
 
-- [X] T001 Add feature test matrix and pass/fail criteria in specs/003-improve-list-usability/quickstart.md
-- [X] T002 [P] Add dependency decision note confirming zero new packages in specs/003-improve-list-usability/research.md
-- [X] T003 [P] Add item usability acceptance checklist in specs/003-improve-list-usability/checklists/requirements.md
+- [x] T001 Add feature test matrix and pass/fail criteria in specs/003-improve-list-usability/quickstart.md
+- [x] T002 [P] Add dependency decision note confirming zero new packages in specs/003-improve-list-usability/research.md
+- [x] T003 [P] Add item usability acceptance checklist in specs/003-improve-list-usability/checklists/requirements.md
 
 ---
 
@@ -23,12 +23,12 @@
 
 **CRITICAL**: No user story implementation starts until this phase is complete.
 
-- [X] T004 Create normalized item text helpers in src/lib/utils/item-text.ts
-- [X] T005 [P] Create stable group+alphabetical ordering helper in src/lib/utils/item-ordering.ts
-- [X] T006 [P] Create match scoring helper for duplicate suggestions in src/lib/utils/item-matching.ts
-- [X] T007 Wire ordering helper into item derivation pipeline in src/lib/stores/item-store.ts
-- [X] T008 Add foundational unit tests for normalization, ordering, and scoring in tests/unit/item-store.test.ts
-- [X] T009 Document shared UX/accessibility rules for list interactions in specs/003-improve-list-usability/research.md
+- [x] T004 Create normalized item text helpers in src/lib/utils/item-text.ts
+- [x] T005 [P] Create stable group+alphabetical ordering helper in src/lib/utils/item-ordering.ts
+- [x] T006 [P] Create match scoring helper for duplicate suggestions in src/lib/utils/item-matching.ts
+- [x] T007 Wire ordering helper into item derivation pipeline in src/lib/stores/item-store.ts
+- [x] T008 Add foundational unit tests for normalization, ordering, and scoring in tests/unit/item-store.test.ts
+- [x] T009 Document shared UX/accessibility rules for list interactions in specs/003-improve-list-usability/research.md
 
 **Checkpoint**: Shared ordering/matching primitives are complete; user stories can proceed.
 
@@ -42,17 +42,17 @@
 
 ### Tests for User Story 1 (REQUIRED)
 
-- [X] T010 [P] [US1] Add ordering behavior unit tests for mixed completion states in tests/unit/item-store.test.ts
-- [X] T011 [P] [US1] Add UI interaction tests for enlarged completion hit area in tests/e2e/items-flow.spec.ts
-- [X] T012 [US1] Add regression contract assertions for deterministic item ordering in tests/contract/items.supabase.contract.test.ts
+- [x] T010 [P] [US1] Add ordering behavior unit tests for mixed completion states in tests/unit/item-store.test.ts
+- [x] T011 [P] [US1] Add UI interaction tests for enlarged completion hit area in tests/e2e/items-flow.spec.ts
+- [x] T012 [US1] Add regression contract assertions for deterministic item ordering in tests/contract/items.supabase.contract.test.ts
 
 ### Implementation for User Story 1
 
-- [X] T013 [US1] Apply grouped alphabetical ordering in store selectors in src/lib/stores/item-store.ts
-- [X] T014 [US1] Ensure page-level item list consumers use sorted selectors in src/routes/lists/[listId]/+page.svelte
-- [X] T015 [US1] Expand completion control click/tap target structure in src/lib/components/TodoItemList.svelte
-- [X] T016 [US1] Update completion control styling for larger pointer target without CSS framework in src/lib/components/TodoItemList.svelte
-- [X] T017 [US1] Verify keyboard and focus behavior for updated completion controls in src/lib/components/TodoItemList.svelte
+- [x] T013 [US1] Apply grouped alphabetical ordering in store selectors in src/lib/stores/item-store.ts
+- [x] T014 [US1] Ensure page-level item list consumers use sorted selectors in src/routes/lists/[listId]/+page.svelte
+- [x] T015 [US1] Expand completion control click/tap target structure in src/lib/components/TodoItemList.svelte
+- [x] T016 [US1] Update completion control styling for larger pointer target without CSS framework in src/lib/components/TodoItemList.svelte
+- [x] T017 [US1] Verify keyboard and focus behavior for updated completion controls in src/lib/components/TodoItemList.svelte
 
 **Checkpoint**: User Story 1 is functional and independently testable.
 
@@ -66,17 +66,17 @@
 
 ### Tests for User Story 2 (REQUIRED)
 
-- [X] T018 [P] [US2] Add matching heuristic unit tests for case/whitespace normalization in tests/unit/item-store.test.ts
-- [X] T019 [P] [US2] Add suggestion visibility and ranking E2E checks in tests/e2e/items-flow.spec.ts
-- [X] T020 [US2] Add repository-level duplicate suggestion behavior test coverage in tests/contract/items.supabase.contract.test.ts
+- [x] T018 [P] [US2] Add matching heuristic unit tests for case/whitespace normalization in tests/unit/item-store.test.ts
+- [x] T019 [P] [US2] Add suggestion visibility and ranking E2E checks in tests/e2e/items-flow.spec.ts
+- [x] T020 [US2] Add repository-level duplicate suggestion behavior test coverage in tests/contract/items.supabase.contract.test.ts
 
 ### Implementation for User Story 2
 
-- [X] T021 [US2] Add suggestion state and selectors for new item draft input in src/lib/stores/item-store.ts
-- [X] T022 [US2] Integrate match scoring helper into add-item typing flow in src/lib/stores/item-store.ts
-- [X] T023 [US2] Render suggestion list under new item field with semantic roles in src/lib/components/TodoItemList.svelte
-- [X] T024 [US2] Add keyboard navigation for suggestion list interactions in src/lib/components/TodoItemList.svelte
-- [X] T025 [US2] Add empty/low-confidence suggestion handling messages in src/lib/components/TodoItemList.svelte
+- [x] T021 [US2] Add suggestion state and selectors for new item draft input in src/lib/stores/item-store.ts
+- [x] T022 [US2] Integrate match scoring helper into add-item typing flow in src/lib/stores/item-store.ts
+- [x] T023 [US2] Render suggestion list under new item field with semantic roles in src/lib/components/TodoItemList.svelte
+- [x] T024 [US2] Add keyboard navigation for suggestion list interactions in src/lib/components/TodoItemList.svelte
+- [x] T025 [US2] Add empty/low-confidence suggestion handling messages in src/lib/components/TodoItemList.svelte
 
 **Checkpoint**: User Stories 1 and 2 are both functional and independently testable.
 
@@ -90,16 +90,16 @@
 
 ### Tests for User Story 3 (REQUIRED)
 
-- [X] T026 [P] [US3] Add unit tests for update-existing decision flow and guardrails in tests/unit/item-store.test.ts
-- [X] T027 [P] [US3] Add E2E coverage for confirm-update and create-anyway branches in tests/e2e/items-flow.spec.ts
-- [X] T028 [US3] Add contract tests for completion update path used by duplicate resolution in tests/contract/items.supabase.contract.test.ts
+- [x] T026 [P] [US3] Add unit tests for update-existing decision flow and guardrails in tests/unit/item-store.test.ts
+- [x] T027 [P] [US3] Add E2E coverage for confirm-update and create-anyway branches in tests/e2e/items-flow.spec.ts
+- [x] T028 [US3] Add contract tests for completion update path used by duplicate resolution in tests/contract/items.supabase.contract.test.ts
 
 ### Implementation for User Story 3
 
-- [X] T029 [US3] Add explicit reactivate-existing action handler in add-item workflow in src/lib/stores/item-store.ts
-- [X] T030 [US3] Reuse existing item update repository method for duplicate-resolution edits in src/lib/memory/item-repository.ts
-- [X] T031 [US3] Add confirmation UI and create-anyway fallback controls in src/lib/components/TodoItemList.svelte
-- [X] T032 [US3] Preserve audit-safe behavior so no silent overwrite occurs in src/lib/components/TodoItemList.svelte
+- [x] T029 [US3] Add explicit reactivate-existing action handler in add-item workflow in src/lib/stores/item-store.ts
+- [x] T030 [US3] Reuse existing item update repository method for duplicate-resolution edits in src/lib/memory/item-repository.ts
+- [x] T031 [US3] Add confirmation UI and create-anyway fallback controls in src/lib/components/TodoItemList.svelte
+- [x] T032 [US3] Preserve audit-safe behavior so no silent overwrite occurs in src/lib/components/TodoItemList.svelte
 
 **Checkpoint**: All user stories are independently functional.
 
@@ -109,10 +109,10 @@
 
 **Purpose**: Final hardening and documentation/test completion across stories.
 
-- [X] T033 [P] Add final accessibility verification notes for changed interactions in specs/003-improve-list-usability/quickstart.md
-- [X] T034 [P] Add edge-case test scenarios for long text and tie ordering in tests/e2e/items-flow.spec.ts
+- [x] T033 [P] Add final accessibility verification notes for changed interactions in specs/003-improve-list-usability/quickstart.md
+- [x] T034 [P] Add edge-case test scenarios for long text and tie ordering in tests/e2e/items-flow.spec.ts
 - [ ] T035 Run full lint and test gates for feature readiness via package.json
-- [X] T036 Document implementation outcomes and no-new-dependency confirmation in specs/003-improve-list-usability/research.md
+- [x] T036 Document implementation outcomes and no-new-dependency confirmation in specs/003-improve-list-usability/research.md
 
 ---
 

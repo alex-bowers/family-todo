@@ -1,5 +1,5 @@
-import type { TodoList, UUID } from '$lib/memory/types';
-import type { SyncEngine } from '$lib/sync/engine';
+import type { TodoList, UUID } from "$lib/memory/types";
+import type { SyncEngine } from "$lib/sync/engine";
 
 interface ListSyncOptions {
   householdId: UUID;
@@ -8,17 +8,21 @@ interface ListSyncOptions {
   onError?: (error: unknown) => void;
 }
 
-export function setupListRefreshOnReconnect(options: ListSyncOptions): () => void {
+export function setupListRefreshOnReconnect(
+  options: ListSyncOptions,
+): () => void {
   const refresh = async (): Promise<void> => {
     try {
       const snapshot = await options.syncEngine.pullChanges();
       const lists = snapshot.lists
-        .filter((list) => list.householdId === options.householdId && !list.deletedAt)
+        .filter(
+          (list) => list.householdId === options.householdId && !list.deletedAt,
+        )
         .sort(
           (a, b) =>
             a.sortOrder - b.sortOrder ||
             a.updatedAt.localeCompare(b.updatedAt) ||
-            a.createdAt.localeCompare(b.createdAt)
+            a.createdAt.localeCompare(b.createdAt),
         );
       options.onListsUpdated(lists);
     } catch (error) {
@@ -30,13 +34,13 @@ export function setupListRefreshOnReconnect(options: ListSyncOptions): () => voi
     void refresh();
   };
 
-  if (typeof window !== 'undefined') {
-    window.addEventListener('online', handleOnline);
+  if (typeof window !== "undefined") {
+    window.addEventListener("online", handleOnline);
   }
 
   return () => {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('online', handleOnline);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("online", handleOnline);
     }
   };
 }

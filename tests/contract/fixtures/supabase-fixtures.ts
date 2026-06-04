@@ -1,4 +1,8 @@
-import { FIXTURE_HOUSEHOLD_ID, FIXTURE_ITEM_ID, FIXTURE_LIST_ID } from './hasura-fixtures';
+import {
+  FIXTURE_HOUSEHOLD_ID,
+  FIXTURE_ITEM_ID,
+  FIXTURE_LIST_ID,
+} from "./hasura-fixtures";
 
 export interface SupabaseListRow {
   id: string;
@@ -22,30 +26,34 @@ export interface SupabaseItemRow {
   deleted_at: string | null;
 }
 
-export function makeSupabaseListRow(overrides: Partial<SupabaseListRow> = {}): SupabaseListRow {
+export function makeSupabaseListRow(
+  overrides: Partial<SupabaseListRow> = {},
+): SupabaseListRow {
   return {
     id: FIXTURE_LIST_ID,
     household_id: FIXTURE_HOUSEHOLD_ID,
-    title: 'Groceries',
+    title: "Groceries",
     sort_order: 0,
-    created_at: '2026-04-17T00:00:00.000Z',
-    updated_at: '2026-04-17T00:00:00.000Z',
+    created_at: "2026-04-17T00:00:00.000Z",
+    updated_at: "2026-04-17T00:00:00.000Z",
     deleted_at: null,
-    ...overrides
+    ...overrides,
   };
 }
 
-export function makeSupabaseItemRow(overrides: Partial<SupabaseItemRow> = {}): SupabaseItemRow {
+export function makeSupabaseItemRow(
+  overrides: Partial<SupabaseItemRow> = {},
+): SupabaseItemRow {
   return {
     id: FIXTURE_ITEM_ID,
     household_id: FIXTURE_HOUSEHOLD_ID,
     list_id: FIXTURE_LIST_ID,
-    description: 'Buy milk',
+    description: "Buy milk",
     is_completed: false,
     completed_at: null,
-    created_at: '2026-04-17T00:00:00.000Z',
-    updated_at: '2026-04-17T00:00:00.000Z',
+    created_at: "2026-04-17T00:00:00.000Z",
+    updated_at: "2026-04-17T00:00:00.000Z",
     deleted_at: null,
-    ...overrides
+    ...overrides,
   };
 }

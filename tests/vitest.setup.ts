@@ -1,5 +1,5 @@
-import { resetSupabaseClient } from '../src/lib/supabase/client';
-import { vi } from 'vitest';
+import { resetSupabaseClient } from "../src/lib/supabase/client";
+import { vi } from "vitest";
 
 // Clean up resources after each test to prevent hanging processes
 afterEach(() => {

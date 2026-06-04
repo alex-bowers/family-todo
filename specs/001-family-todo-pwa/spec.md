@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: User description: "Build an application called FamilyToDo that helps my family keep multiple todo lists. Lists need to be able to be added and deleted and the UI needs to account for that. Within each list, the items need to be able to be created, edited, completed and deleted. Completed items will just have a strike through them and deleted will remove it completely. It will be a PWA."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Manage Multiple Lists (Priority: P1)
 
@@ -71,10 +71,10 @@ confirming normal list and item interactions are available.
 **Acceptance Scenarios**:
 
 1. **Given** a supported browser session, **When** a user chooses install,
-  **Then** FamilyToDo can be installed and launched as an app.
+   **Then** FamilyToDo can be installed and launched as an app.
 2. **Given** the app is installed, **When** a user opens it from the installed
-  icon, **Then** the app starts in an app-like window with core functionality
-  available.
+   icon, **Then** the app starts in an app-like window with core functionality
+   available.
 
 ---
 
@@ -88,7 +88,7 @@ confirming normal list and item interactions are available.
 - A device goes offline, changes data, and later reconnects to sync updates.
 - Installation is attempted in a browser that does not support installation.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -127,7 +127,7 @@ confirming normal list and item interactions are available.
 - **FR-018**: Primary workflows (create list, add item, complete item, delete
   item) MUST be completable in minimal steps without requiring optional setup.
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **TodoList**: Represents one named family list; key attributes include list
   identifier, display name, and creation timestamp.
@@ -135,7 +135,7 @@ confirming normal list and item interactions are available.
   identifier, parent list identifier, description text, completion status,
   and last-updated timestamp.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

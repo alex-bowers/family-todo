@@ -1,9 +1,11 @@
 # Contract: Supabase Data and Sync Interface
 
 ## Purpose
+
 Defines required data access and synchronization behavior after replacing Hasura with Supabase while keeping frontend repository contracts stable.
 
 ## Scope
+
 - Household-scoped list and item reads/writes
 - Incremental sync reads including tombstones
 - Conflict-aware updates for deterministic resolution
@@ -11,6 +13,7 @@ Defines required data access and synchronization behavior after replacing Hasura
 ## Read Contracts
 
 ### GetListsByHousehold
+
 - Inputs:
   - householdId: UUID
 - Behavior:
@@ -19,6 +22,7 @@ Defines required data access and synchronization behavior after replacing Hasura
   - id, household_id, title, sort_order, created_at, updated_at, deleted_at
 
 ### GetItemsByList
+
 - Inputs:
   - householdId: UUID
   - listId: UUID
@@ -28,6 +32,7 @@ Defines required data access and synchronization behavior after replacing Hasura
   - id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at
 
 ### GetChangesSince
+
 - Inputs:
   - householdId: UUID
   - since: timestamptz
@@ -38,6 +43,7 @@ Defines required data access and synchronization behavior after replacing Hasura
 ## Mutation Contracts
 
 ### CreateList
+
 - Inputs:
   - householdId: UUID
   - title: string
@@ -46,6 +52,7 @@ Defines required data access and synchronization behavior after replacing Hasura
   - Emit created_at and updated_at.
 
 ### DeleteList
+
 - Inputs:
   - householdId: UUID
   - listId: UUID
@@ -54,6 +61,7 @@ Defines required data access and synchronization behavior after replacing Hasura
   - Child item visibility must align with app query semantics.
 
 ### CreateItem
+
 - Inputs:
   - householdId: UUID
   - listId: UUID
@@ -63,6 +71,7 @@ Defines required data access and synchronization behavior after replacing Hasura
   - Initialize is_completed=false and completed_at=null.
 
 ### UpdateItemText
+
 - Inputs:
   - householdId: UUID
   - itemId: UUID
@@ -73,6 +82,7 @@ Defines required data access and synchronization behavior after replacing Hasura
   - Return conflict error with current server record when precondition fails.
 
 ### SetItemCompletion
+
 - Inputs:
   - householdId: UUID
   - itemId: UUID
@@ -84,6 +94,7 @@ Defines required data access and synchronization behavior after replacing Hasura
   - Conditional update behavior matches UpdateItemText.
 
 ### DeleteItem
+
 - Inputs:
   - householdId: UUID
   - itemId: UUID
@@ -95,6 +106,7 @@ Defines required data access and synchronization behavior after replacing Hasura
 ## Realtime and Sync Contract
 
 ### HouseholdChangesChannel
+
 - Subscription scope:
   - household_id filter for list and item changes.
 - Behavior:
@@ -102,11 +114,13 @@ Defines required data access and synchronization behavior after replacing Hasura
   - Client does not rely on event payload ordering alone.
 
 ## Authorization Contract
+
 - Row-level security enforces household_id scope.
 - Cross-household reads/writes are denied.
 - Unauthorized operations return permission errors and do not mutate data.
 
 ## Error Contract
+
 - Validation errors:
   - Empty list title or item description -> user-facing validation message.
 - Authorization errors:

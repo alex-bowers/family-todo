@@ -1,13 +1,13 @@
-import type { PendingMutation, SyncCursor, SyncSnapshot, UUID } from './types';
+import type { PendingMutation, SyncCursor, SyncSnapshot, UUID } from "./types";
 
-const CACHE_PREFIX = 'familytodo';
+const CACHE_PREFIX = "familytodo";
 
 function key(name: string): string {
   return `${CACHE_PREFIX}:${name}`;
 }
 
 function readJson<T>(name: string, fallback: T): T {
-  if (typeof localStorage === 'undefined') {
+  if (typeof localStorage === "undefined") {
     return fallback;
   }
 
@@ -24,7 +24,7 @@ function readJson<T>(name: string, fallback: T): T {
 }
 
 function writeJson<T>(name: string, value: T): void {
-  if (typeof localStorage === 'undefined') {
+  if (typeof localStorage === "undefined") {
     return;
   }
 
@@ -57,12 +57,12 @@ export const cacheStore = {
   },
 
   clearHousehold(householdId: UUID): void {
-    if (typeof localStorage === 'undefined') {
+    if (typeof localStorage === "undefined") {
       return;
     }
 
     localStorage.removeItem(key(`snapshot:${householdId}`));
     localStorage.removeItem(key(`cursor:${householdId}`));
     localStorage.removeItem(key(`queue:${householdId}`));
-  }
+  },
 };

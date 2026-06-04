@@ -1,7 +1,12 @@
-import { cacheStore } from '$lib/memory/cache';
-import { fromSupabaseList, type SupabaseListRow, type TodoList, type UUID } from '$lib/memory/types';
-import { DELETE_LIST, GET_LISTS, CREATE_LIST } from '$lib/graphql/operations';
-import { hasuraClient, type HasuraClient } from '$lib/graphql/client';
+import { cacheStore } from "$lib/memory/cache";
+import {
+  fromSupabaseList,
+  type SupabaseListRow,
+  type TodoList,
+  type UUID,
+} from "$lib/memory/types";
+import { DELETE_LIST, GET_LISTS, CREATE_LIST } from "$lib/graphql/operations";
+import { hasuraClient, type HasuraClient } from "$lib/graphql/client";
 
 interface GetListsResponse {
   todo_lists: SupabaseListRow[];
@@ -21,7 +26,10 @@ interface DeleteListResponse {
 function nonDeleted(lists: TodoList[]): TodoList[] {
   return lists
     .filter((list) => !list.deletedAt)
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt.localeCompare(b.createdAt));
+    .sort(
+      (a, b) =>
+        a.sortOrder - b.sortOrder || a.createdAt.localeCompare(b.createdAt),
+    );
 }
 
 export class ListRepository {
@@ -36,13 +44,15 @@ export class ListRepository {
     cacheStore.writeSnapshot(householdId, {
       lists,
       items: current?.items ?? [],
-      serverTs: new Date().toISOString()
+      serverTs: new Date().toISOString(),
     });
   }
 
   async getLists(householdId: UUID): Promise<TodoList[]> {
     if (this.client) {
-      const result = await this.client.request<GetListsResponse>(GET_LISTS, { householdId });
+      const result = await this.client.request<GetListsResponse>(GET_LISTS, {
+        householdId,
+      });
       const mapped = result.todo_lists.map(fromSupabaseList);
       this.writeLocal(householdId, mapped);
       return nonDeleted(mapped);
@@ -54,18 +64,21 @@ export class ListRepository {
   async createList(householdId: UUID, title: string): Promise<TodoList> {
     const trimmed = title.trim();
     if (!trimmed) {
-      throw new Error('List title is required');
+      throw new Error("List title is required");
     }
 
     const existing = this.readLocal(householdId);
     const sortOrder = existing.length;
 
     if (this.client) {
-      const result = await this.client.request<CreateListResponse>(CREATE_LIST, {
-        householdId,
-        title: trimmed,
-        sortOrder
-      });
+      const result = await this.client.request<CreateListResponse>(
+        CREATE_LIST,
+        {
+          householdId,
+          title: trimmed,
+          sortOrder,
+        },
+      );
       const created = fromSupabaseList(result.insert_todo_lists_one);
       this.writeLocal(householdId, [...existing, created]);
       return created;
@@ -79,7 +92,7 @@ export class ListRepository {
       sortOrder,
       createdAt: now,
       updatedAt: now,
-      deletedAt: null
+      deletedAt: null,
     };
 
     this.writeLocal(householdId, [...existing, created]);
@@ -92,7 +105,7 @@ export class ListRepository {
     if (this.client) {
       await this.client.request<DeleteListResponse>(DELETE_LIST, {
         listId,
-        deletedAt: new Date().toISOString()
+        deletedAt: new Date().toISOString(),
       });
     }
 
@@ -102,9 +115,9 @@ export class ListRepository {
         ? {
             ...list,
             deletedAt: now,
-            updatedAt: now
+            updatedAt: now,
           }
-        : list
+        : list,
     );
 
     this.writeLocal(householdId, updated);

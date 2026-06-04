@@ -8,44 +8,44 @@ constitution principle that dependencies must be intentional and minimal.
 ## Current Dependencies
 
 - @supabase/supabase-js
-Reason: Unified backend client for Postgres-backed data APIs and realtime integration after replacing Hasura.
-Native alternative considered: Custom fetch wrapper against REST/RPC endpoints.
-Decision: Rejected because it duplicates client behavior (auth/session/realtime ergonomics) already supported by the maintained SDK.
+  Reason: Unified backend client for Postgres-backed data APIs and realtime integration after replacing Hasura.
+  Native alternative considered: Custom fetch wrapper against REST/RPC endpoints.
+  Decision: Rejected because it duplicates client behavior (auth/session/realtime ergonomics) already supported by the maintained SDK.
 
 - @sveltejs/kit
-Reason: Core framework for routing, rendering, and PWA-oriented app architecture.
-Native alternative considered: Hand-built Vite SPA with custom routing and hydration.
-Decision: Rejected due to higher maintenance and reduced convention support.
+  Reason: Core framework for routing, rendering, and PWA-oriented app architecture.
+  Native alternative considered: Hand-built Vite SPA with custom routing and hydration.
+  Decision: Rejected due to higher maintenance and reduced convention support.
 
 - @sveltejs/adapter-cloudflare
-Reason: Deployable output format for Cloudflare Pages/Workers runtime.
-Native alternative considered: Custom build/deploy scripting.
-Decision: Rejected due to increased deployment complexity and risk.
+  Reason: Deployable output format for Cloudflare Pages/Workers runtime.
+  Native alternative considered: Custom build/deploy scripting.
+  Decision: Rejected due to increased deployment complexity and risk.
 
 - vite
-Reason: Development server and bundler for SvelteKit.
-Native alternative considered: None practical, this is the framework-standard bundler.
-Decision: Keep.
+  Reason: Development server and bundler for SvelteKit.
+  Native alternative considered: None practical, this is the framework-standard bundler.
+  Decision: Keep.
 
 - vitest
-Reason: Fast TypeScript-native unit/contract test runner integrated with Vite.
-Native alternative considered: Node test runner.
-Decision: Node test runner lacks integrated mocking and coverage fit for this codebase.
+  Reason: Fast TypeScript-native unit/contract test runner integrated with Vite.
+  Native alternative considered: Node test runner.
+  Decision: Node test runner lacks integrated mocking and coverage fit for this codebase.
 
 - @playwright/test
-Reason: End-to-end browser tests for PWA and cross-device flows.
-Native alternative considered: Manual QA only.
-Decision: Rejected because constitution requires automated behavior regression tests.
+  Reason: End-to-end browser tests for PWA and cross-device flows.
+  Native alternative considered: Manual QA only.
+  Decision: Rejected because constitution requires automated behavior regression tests.
 
 - eslint / typescript-eslint / eslint-plugin-svelte
-Reason: Static analysis and quality gate for TypeScript + Svelte files.
-Native alternative considered: TypeScript compiler checks only.
-Decision: Compiler checks alone miss stylistic and safety issues.
+  Reason: Static analysis and quality gate for TypeScript + Svelte files.
+  Native alternative considered: TypeScript compiler checks only.
+  Decision: Compiler checks alone miss stylistic and safety issues.
 
 - prettier / prettier-plugin-svelte
-Reason: Consistent formatting with low maintenance overhead.
-Native alternative considered: Manual formatting.
-Decision: Rejected due to inconsistent diffs and review noise.
+  Reason: Consistent formatting with low maintenance overhead.
+  Native alternative considered: Manual formatting.
+  Decision: Rejected due to inconsistent diffs and review noise.
 
 ## Review Rules
 

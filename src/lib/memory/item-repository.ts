@@ -1,14 +1,19 @@
-import { hasuraClient, type HasuraClient } from '$lib/graphql/client';
+import { hasuraClient, type HasuraClient } from "$lib/graphql/client";
 import {
   CREATE_ITEM,
   DELETE_ITEM,
   GET_ITEMS_BY_LIST,
   SET_ITEM_COMPLETION,
-  UPDATE_ITEM_TEXT
-} from '$lib/graphql/operations';
-import { cacheStore } from '$lib/memory/cache';
-import { fromSupabaseItem, type SupabaseItemRow, type TodoItem, type UUID } from '$lib/memory/types';
-import { sortItemsForDisplay } from '$lib/utils/item-ordering';
+  UPDATE_ITEM_TEXT,
+} from "$lib/graphql/operations";
+import { cacheStore } from "$lib/memory/cache";
+import {
+  fromSupabaseItem,
+  type SupabaseItemRow,
+  type TodoItem,
+  type UUID,
+} from "$lib/memory/types";
+import { sortItemsForDisplay } from "$lib/utils/item-ordering";
 
 interface GetItemsResponse {
   todo_items: SupabaseItemRow[];
@@ -36,7 +41,7 @@ function activeSorted(items: TodoItem[]): TodoItem[] {
 export class ItemRepository {
   constructor(
     private readonly householdId: UUID,
-    private readonly client: HasuraClient | null = hasuraClient
+    private readonly client: HasuraClient | null = hasuraClient,
   ) {}
 
   private readLocal(): TodoItem[] {
@@ -48,36 +53,44 @@ export class ItemRepository {
     cacheStore.writeSnapshot(this.householdId, {
       lists: current?.lists ?? [],
       items,
-      serverTs: new Date().toISOString()
+      serverTs: new Date().toISOString(),
     });
   }
 
   async getItems(listId: UUID): Promise<TodoItem[]> {
     if (this.client) {
-      const result = await this.client.request<GetItemsResponse>(GET_ITEMS_BY_LIST, { listId });
+      const result = await this.client.request<GetItemsResponse>(
+        GET_ITEMS_BY_LIST,
+        { listId },
+      );
       const mapped = result.todo_items.map(fromSupabaseItem);
       const local = this.readLocal().filter((item) => item.listId !== listId);
       this.writeLocal([...local, ...mapped]);
       return activeSorted(mapped);
     }
 
-    return activeSorted(this.readLocal().filter((item) => item.listId === listId));
+    return activeSorted(
+      this.readLocal().filter((item) => item.listId === listId),
+    );
   }
 
   async createItem(listId: UUID, description: string): Promise<TodoItem> {
     const trimmed = description.trim();
     if (!trimmed) {
-      throw new Error('Item text is required');
+      throw new Error("Item text is required");
     }
 
     const existing = this.readLocal();
 
     if (this.client) {
-      const result = await this.client.request<CreateItemResponse>(CREATE_ITEM, {
-        listId,
-        householdId: this.householdId,
-        description: trimmed
-      });
+      const result = await this.client.request<CreateItemResponse>(
+        CREATE_ITEM,
+        {
+          listId,
+          householdId: this.householdId,
+          description: trimmed,
+        },
+      );
       const created = fromSupabaseItem(result.insert_todo_items_one);
       this.writeLocal([...existing, created]);
       return created;
@@ -92,7 +105,7 @@ export class ItemRepository {
       completedAt: null,
       createdAt: now,
       updatedAt: now,
-      deletedAt: null
+      deletedAt: null,
     };
 
     this.writeLocal([...existing, created]);
@@ -102,73 +115,88 @@ export class ItemRepository {
   async updateItemText(itemId: UUID, description: string): Promise<TodoItem> {
     const trimmed = description.trim();
     if (!trimmed) {
-      throw new Error('Item text is required');
+      throw new Error("Item text is required");
     }
 
     const existing = this.readLocal();
 
     if (this.client) {
-      const result = await this.client.request<UpdateItemResponse>(UPDATE_ITEM_TEXT, {
-        itemId,
-        description: trimmed,
-        expectedUpdatedAt: existing.find((item) => item.id === itemId)?.updatedAt
-      });
+      const result = await this.client.request<UpdateItemResponse>(
+        UPDATE_ITEM_TEXT,
+        {
+          itemId,
+          description: trimmed,
+          expectedUpdatedAt: existing.find((item) => item.id === itemId)
+            ?.updatedAt,
+        },
+      );
 
       if (!result.update_todo_items_by_pk) {
-        throw new Error('Item not found');
+        throw new Error("Item not found");
       }
 
       const updated = fromSupabaseItem(result.update_todo_items_by_pk);
-      this.writeLocal(existing.map((item) => (item.id === itemId ? updated : item)));
+      this.writeLocal(
+        existing.map((item) => (item.id === itemId ? updated : item)),
+      );
       return updated;
     }
 
     const now = new Date().toISOString();
     const updated = existing.find((item) => item.id === itemId);
     if (!updated) {
-      throw new Error('Item not found');
+      throw new Error("Item not found");
     }
 
     const next: TodoItem = {
       ...updated,
       description: trimmed,
-      updatedAt: now
+      updatedAt: now,
     };
     this.writeLocal(existing.map((item) => (item.id === itemId ? next : item)));
     return next;
   }
 
-  async setItemCompletion(itemId: UUID, isCompleted: boolean): Promise<TodoItem> {
+  async setItemCompletion(
+    itemId: UUID,
+    isCompleted: boolean,
+  ): Promise<TodoItem> {
     const existing = this.readLocal();
 
     if (this.client) {
-      const result = await this.client.request<UpdateItemResponse>(SET_ITEM_COMPLETION, {
-        itemId,
-        isCompleted,
-        completedAt: isCompleted ? new Date().toISOString() : null,
-        expectedUpdatedAt: existing.find((item) => item.id === itemId)?.updatedAt
-      });
+      const result = await this.client.request<UpdateItemResponse>(
+        SET_ITEM_COMPLETION,
+        {
+          itemId,
+          isCompleted,
+          completedAt: isCompleted ? new Date().toISOString() : null,
+          expectedUpdatedAt: existing.find((item) => item.id === itemId)
+            ?.updatedAt,
+        },
+      );
 
       if (!result.update_todo_items_by_pk) {
-        throw new Error('Item not found');
+        throw new Error("Item not found");
       }
 
       const updated = fromSupabaseItem(result.update_todo_items_by_pk);
-      this.writeLocal(existing.map((item) => (item.id === itemId ? updated : item)));
+      this.writeLocal(
+        existing.map((item) => (item.id === itemId ? updated : item)),
+      );
       return updated;
     }
 
     const now = new Date().toISOString();
     const updated = existing.find((item) => item.id === itemId);
     if (!updated) {
-      throw new Error('Item not found');
+      throw new Error("Item not found");
     }
 
     const next: TodoItem = {
       ...updated,
       isCompleted,
       completedAt: isCompleted ? now : null,
-      updatedAt: now
+      updatedAt: now,
     };
 
     this.writeLocal(existing.map((item) => (item.id === itemId ? next : item)));
@@ -182,7 +210,8 @@ export class ItemRepository {
       await this.client.request<DeleteItemResponse>(DELETE_ITEM, {
         itemId,
         deletedAt: new Date().toISOString(),
-        expectedUpdatedAt: existing.find((item) => item.id === itemId)?.updatedAt
+        expectedUpdatedAt: existing.find((item) => item.id === itemId)
+          ?.updatedAt,
       });
     }
 
@@ -192,9 +221,9 @@ export class ItemRepository {
         ? {
             ...item,
             deletedAt: now,
-            updatedAt: now
+            updatedAt: now,
           }
-        : item
+        : item,
     );
 
     this.writeLocal(updated);

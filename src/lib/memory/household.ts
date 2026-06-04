@@ -1,10 +1,10 @@
-import type { UUID } from './types';
+import type { UUID } from "./types";
 
-const DEFAULT_HOUSEHOLD_KEY = 'familytodo:household-id';
-const FALLBACK_HOUSEHOLD_ID = '00000000-0000-0000-0000-000000000001';
+const DEFAULT_HOUSEHOLD_KEY = "familytodo:household-id";
+const FALLBACK_HOUSEHOLD_ID = "00000000-0000-0000-0000-000000000001";
 
 export function resolveHouseholdId(): UUID {
-  if (typeof localStorage !== 'undefined') {
+  if (typeof localStorage !== "undefined") {
     const existing = localStorage.getItem(DEFAULT_HOUSEHOLD_KEY);
     if (existing) {
       return existing;
@@ -14,7 +14,7 @@ export function resolveHouseholdId(): UUID {
   const configured = import.meta.env.PUBLIC_HOUSEHOLD_ID;
   const resolved = configured || FALLBACK_HOUSEHOLD_ID;
 
-  if (typeof localStorage !== 'undefined') {
+  if (typeof localStorage !== "undefined") {
     localStorage.setItem(DEFAULT_HOUSEHOLD_KEY, resolved);
   }
 
@@ -22,9 +22,9 @@ export function resolveHouseholdId(): UUID {
 }
 
 export function resolveDeviceId(): string {
-  const key = 'familytodo:device-id';
+  const key = "familytodo:device-id";
 
-  if (typeof localStorage !== 'undefined') {
+  if (typeof localStorage !== "undefined") {
     const existing = localStorage.getItem(key);
     if (existing) {
       return existing;
@@ -35,5 +35,5 @@ export function resolveDeviceId(): string {
     return generated;
   }
 
-  return 'server-device';
+  return "server-device";
 }

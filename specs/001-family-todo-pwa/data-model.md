@@ -1,6 +1,7 @@
 # Data Model: FamilyToDo Multi-List PWA
 
 ## Entity: Household
+
 - Purpose: Logical ownership boundary for shared family data.
 - Fields:
   - id: UUID (primary key)
@@ -10,6 +11,7 @@
   - 1:N with TodoList
 
 ## Entity: TodoList
+
 - Purpose: Represents one named list in a household.
 - Fields:
   - id: UUID (primary key)
@@ -27,6 +29,7 @@
   - 1:N with TodoItem
 
 ## Entity: TodoItem
+
 - Purpose: Represents one actionable task in a list.
 - Fields:
   - id: UUID (primary key)
@@ -44,6 +47,7 @@
   - N:1 with TodoList
 
 ## Entity: SyncCursor
+
 - Purpose: Track per-device sync checkpoint for efficient reconnect synchronization.
 - Fields:
   - device_id: text
@@ -55,6 +59,7 @@
 ## State Transitions
 
 ### TodoItem state
+
 - Active -> Completed:
   - Trigger: user marks item complete
   - Effects: is_completed=true, completed_at set, render strike-through
@@ -66,6 +71,7 @@
   - Effects: deleted_at set (server), item removed from UI list
 
 ### TodoList lifecycle
+
 - Created -> Active:
   - Trigger: list creation
 - Active -> Deleted:
@@ -73,6 +79,7 @@
   - Effects: deleted_at set, associated items treated as removed in UI
 
 ## Consistency Notes
+
 - Canonical truth lives in Hasura/Postgres.
 - Client cache is a performance/offline mirror only.
 - v1 conflict strategy: last-write-wins by server timestamp.

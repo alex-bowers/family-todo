@@ -17,6 +17,7 @@
 5. Use keyboard Tab/Space to toggle and confirm focus visibility.
 
 Pass criteria:
+
 - All ordering checks are deterministic.
 - Pointer and keyboard completion interactions succeed on first attempt.
 
@@ -27,6 +28,7 @@ Pass criteria:
 3. Navigate suggestions with ArrowUp/ArrowDown.
 
 Pass criteria:
+
 - Suggestions appear for strong and medium-confidence matches.
 - No suggestion appears for unrelated text.
 
@@ -38,6 +40,7 @@ Pass criteria:
 4. Repeat and choose `Create new anyway` and verify a distinct item is created.
 
 Pass criteria:
+
 - No silent overwrite occurs.
 - Both explicit paths produce expected result.
 

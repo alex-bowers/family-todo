@@ -38,6 +38,7 @@ This is a known issue with Vite-based SvelteKit projects where the test runner d
 1. **Ignore the hanging process message**: The tests are still running correctly and passing. You can safely ignore the hanging process message.
 
 2. **Use the force exit option**: Run tests with a force exit:
+
    ```bash
    pnpm test:unit:force
    ```

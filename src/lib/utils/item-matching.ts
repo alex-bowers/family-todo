@@ -1,5 +1,5 @@
-import type { TodoItem } from '$lib/memory/types';
-import { normalizeItemText } from '$lib/utils/item-text';
+import type { TodoItem } from "$lib/memory/types";
+import { normalizeItemText } from "$lib/utils/item-text";
 
 export interface ItemMatch {
   item: TodoItem;
@@ -8,8 +8,8 @@ export interface ItemMatch {
 }
 
 function tokenOverlapScore(a: string, b: string): number {
-  const aTokens = new Set(a.split(' ').filter(Boolean));
-  const bTokens = new Set(b.split(' ').filter(Boolean));
+  const aTokens = new Set(a.split(" ").filter(Boolean));
+  const bTokens = new Set(b.split(" ").filter(Boolean));
   if (aTokens.size === 0 || bTokens.size === 0) {
     return 0;
   }
@@ -24,7 +24,10 @@ function tokenOverlapScore(a: string, b: string): number {
   return overlap / Math.max(aTokens.size, bTokens.size);
 }
 
-function scoreTextMatch(draftNormalized: string, itemNormalized: string): number {
+function scoreTextMatch(
+  draftNormalized: string,
+  itemNormalized: string,
+): number {
   if (!draftNormalized || !itemNormalized) {
     return 0;
   }
@@ -33,11 +36,17 @@ function scoreTextMatch(draftNormalized: string, itemNormalized: string): number
     return 1;
   }
 
-  if (itemNormalized.startsWith(draftNormalized) || draftNormalized.startsWith(itemNormalized)) {
+  if (
+    itemNormalized.startsWith(draftNormalized) ||
+    draftNormalized.startsWith(itemNormalized)
+  ) {
     return 0.9;
   }
 
-  if (itemNormalized.includes(draftNormalized) || draftNormalized.includes(itemNormalized)) {
+  if (
+    itemNormalized.includes(draftNormalized) ||
+    draftNormalized.includes(itemNormalized)
+  ) {
     return 0.75;
   }
 
@@ -45,7 +54,11 @@ function scoreTextMatch(draftNormalized: string, itemNormalized: string): number
   return overlap >= 0.5 ? 0.6 : overlap;
 }
 
-export function getItemMatches(draft: string, items: TodoItem[], limit = 5): ItemMatch[] {
+export function getItemMatches(
+  draft: string,
+  items: TodoItem[],
+  limit = 5,
+): ItemMatch[] {
   const normalizedDraft = normalizeItemText(draft);
   if (!normalizedDraft) {
     return [];
@@ -59,10 +72,14 @@ export function getItemMatches(draft: string, items: TodoItem[], limit = 5): Ite
       return {
         item,
         score,
-        isStrongMatch: score >= 0.9
+        isStrongMatch: score >= 0.9,
       };
     })
     .filter((match) => match.score >= 0.4)
-    .sort((a, b) => b.score - a.score || a.item.description.localeCompare(b.item.description))
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        a.item.description.localeCompare(b.item.description),
+    )
     .slice(0, limit);
 }

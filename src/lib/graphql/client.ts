@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { getSupabaseClient } from '$lib/supabase/client';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSupabaseClient } from "$lib/supabase/client";
 import {
   CREATE_ITEM,
   CREATE_LIST,
@@ -9,33 +9,38 @@ import {
   GET_ITEMS_BY_LIST,
   GET_LISTS,
   SET_ITEM_COMPLETION,
-  UPDATE_ITEM_TEXT
-} from '$lib/graphql/operations';
+  UPDATE_ITEM_TEXT,
+} from "$lib/graphql/operations";
 
 type RequestVariables = Record<string, unknown>;
 
-function asString(value: unknown, fallback = ''): string {
-  return typeof value === 'string' ? value : fallback;
+function asString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
 }
 
 function asNumber(value: unknown, fallback = 0): number {
-  return typeof value === 'number' ? value : fallback;
+  return typeof value === "number" ? value : fallback;
 }
 
 function asBoolean(value: unknown, fallback = false): boolean {
-  return typeof value === 'boolean' ? value : fallback;
+  return typeof value === "boolean" ? value : fallback;
 }
 
 export class SupabaseDataClient {
-  constructor(private readonly client: SupabaseClient | null = getSupabaseClient()) {}
+  constructor(
+    private readonly client: SupabaseClient | null = getSupabaseClient(),
+  ) {}
 
-  async request<TData>(operation: string, variables: RequestVariables = {}): Promise<TData> {
+  async request<TData>(
+    operation: string,
+    variables: RequestVariables = {},
+  ): Promise<TData> {
     if (!operation.trim()) {
-      throw new Error('Data request failed: operation is required');
+      throw new Error("Data request failed: operation is required");
     }
 
     if (!this.client) {
-      throw new Error('Supabase client is not configured');
+      throw new Error("Supabase client is not configured");
     }
 
     switch (operation) {
@@ -58,19 +63,22 @@ export class SupabaseDataClient {
       case GET_CHANGES_SINCE:
         return this.getChangesSince(variables) as Promise<TData>;
       default:
-        throw new Error(`Data request failed: unsupported operation ${operation}`);
+        throw new Error(
+          `Data request failed: unsupported operation ${operation}`,
+        );
     }
   }
 
   private async getLists(variables: RequestVariables): Promise<unknown> {
     const householdId = asString(variables.householdId);
-    const { data, error } = await this.client!
-      .from('todo_lists')
-      .select('id, household_id, title, sort_order, created_at, updated_at, deleted_at')
-      .eq('household_id', householdId)
-      .is('deleted_at', null)
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: true });
+    const { data, error } = await this.client!.from("todo_lists")
+      .select(
+        "id, household_id, title, sort_order, created_at, updated_at, deleted_at",
+      )
+      .eq("household_id", householdId)
+      .is("deleted_at", null)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
 
     if (error) throw new Error(`Supabase request failed: ${error.message}`);
     return { todo_lists: data ?? [] };
@@ -78,12 +86,13 @@ export class SupabaseDataClient {
 
   private async getItemsByList(variables: RequestVariables): Promise<unknown> {
     const listId = asString(variables.listId);
-    const { data, error } = await this.client!
-      .from('todo_items')
-      .select('id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at')
-      .eq('list_id', listId)
-      .is('deleted_at', null)
-      .order('created_at', { ascending: true });
+    const { data, error } = await this.client!.from("todo_items")
+      .select(
+        "id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at",
+      )
+      .eq("list_id", listId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true });
 
     if (error) throw new Error(`Supabase request failed: ${error.message}`);
     return { todo_items: data ?? [] };
@@ -94,10 +103,11 @@ export class SupabaseDataClient {
     const title = asString(variables.title);
     const sortOrder = asNumber(variables.sortOrder);
 
-    const { data, error } = await this.client!
-      .from('todo_lists')
+    const { data, error } = await this.client!.from("todo_lists")
       .insert({ household_id: householdId, title, sort_order: sortOrder })
-      .select('id, household_id, title, sort_order, created_at, updated_at, deleted_at')
+      .select(
+        "id, household_id, title, sort_order, created_at, updated_at, deleted_at",
+      )
       .single();
 
     if (error) throw new Error(`Supabase request failed: ${error.message}`);
@@ -108,11 +118,10 @@ export class SupabaseDataClient {
     const listId = asString(variables.listId);
     const deletedAt = asString(variables.deletedAt, new Date().toISOString());
 
-    const { data, error } = await this.client!
-      .from('todo_lists')
+    const { data, error } = await this.client!.from("todo_lists")
       .update({ deleted_at: deletedAt })
-      .eq('id', listId)
-      .select('id, deleted_at')
+      .eq("id", listId)
+      .select("id, deleted_at")
       .maybeSingle();
 
     if (error) throw new Error(`Supabase request failed: ${error.message}`);
@@ -124,10 +133,16 @@ export class SupabaseDataClient {
     const description = asString(variables.description);
     const householdId = asString(variables.householdId);
 
-    const { data, error } = await this.client!
-      .from('todo_items')
-      .insert({ list_id: listId, household_id: householdId, description, is_completed: false })
-      .select('id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at')
+    const { data, error } = await this.client!.from("todo_items")
+      .insert({
+        list_id: listId,
+        household_id: householdId,
+        description,
+        is_completed: false,
+      })
+      .select(
+        "id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at",
+      )
       .single();
 
     if (error) throw new Error(`Supabase request failed: ${error.message}`);
@@ -139,40 +154,46 @@ export class SupabaseDataClient {
     const description = asString(variables.description);
     const expectedUpdatedAt = asString(variables.expectedUpdatedAt);
 
-    let query = this.client!
-      .from('todo_items')
+    let query = this.client!.from("todo_items")
       .update({ description })
-      .eq('id', itemId);
+      .eq("id", itemId);
 
     if (expectedUpdatedAt) {
-      query = query.eq('updated_at', expectedUpdatedAt);
+      query = query.eq("updated_at", expectedUpdatedAt);
     }
 
     const { data, error } = await query
-      .select('id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at')
+      .select(
+        "id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at",
+      )
       .maybeSingle();
 
     if (error) throw new Error(`Supabase request failed: ${error.message}`);
     return { update_todo_items_by_pk: data ?? null };
   }
 
-  private async setItemCompletion(variables: RequestVariables): Promise<unknown> {
+  private async setItemCompletion(
+    variables: RequestVariables,
+  ): Promise<unknown> {
     const itemId = asString(variables.itemId);
     const isCompleted = asBoolean(variables.isCompleted);
-    const completedAt = isCompleted ? asString(variables.completedAt, new Date().toISOString()) : null;
+    const completedAt = isCompleted
+      ? asString(variables.completedAt, new Date().toISOString())
+      : null;
     const expectedUpdatedAt = asString(variables.expectedUpdatedAt);
 
-    let query = this.client!
-      .from('todo_items')
+    let query = this.client!.from("todo_items")
       .update({ is_completed: isCompleted, completed_at: completedAt })
-      .eq('id', itemId);
+      .eq("id", itemId);
 
     if (expectedUpdatedAt) {
-      query = query.eq('updated_at', expectedUpdatedAt);
+      query = query.eq("updated_at", expectedUpdatedAt);
     }
 
     const { data, error } = await query
-      .select('id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at')
+      .select(
+        "id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at",
+      )
       .maybeSingle();
 
     if (error) throw new Error(`Supabase request failed: ${error.message}`);
@@ -184,16 +205,15 @@ export class SupabaseDataClient {
     const deletedAt = asString(variables.deletedAt, new Date().toISOString());
     const expectedUpdatedAt = asString(variables.expectedUpdatedAt);
 
-    let query = this.client!
-      .from('todo_items')
+    let query = this.client!.from("todo_items")
       .update({ deleted_at: deletedAt })
-      .eq('id', itemId);
+      .eq("id", itemId);
 
     if (expectedUpdatedAt) {
-      query = query.eq('updated_at', expectedUpdatedAt);
+      query = query.eq("updated_at", expectedUpdatedAt);
     }
 
-    const { data, error } = await query.select('id, deleted_at').maybeSingle();
+    const { data, error } = await query.select("id, deleted_at").maybeSingle();
     if (error) throw new Error(`Supabase request failed: ${error.message}`);
     return { update_todo_items_by_pk: data ?? null };
   }
@@ -202,32 +222,42 @@ export class SupabaseDataClient {
     const householdId = asString(variables.householdId);
     const since = asString(variables.since);
 
-    const { data: changedLists, error: listError } = await this.client!
-      .from('todo_lists')
-      .select('id, household_id, title, sort_order, created_at, updated_at, deleted_at')
-      .eq('household_id', householdId)
-      .gt('updated_at', since)
-      .order('updated_at', { ascending: true });
+    const { data: changedLists, error: listError } = await this.client!.from(
+      "todo_lists",
+    )
+      .select(
+        "id, household_id, title, sort_order, created_at, updated_at, deleted_at",
+      )
+      .eq("household_id", householdId)
+      .gt("updated_at", since)
+      .order("updated_at", { ascending: true });
 
-    if (listError) throw new Error(`Supabase request failed: ${listError.message}`);
+    if (listError)
+      throw new Error(`Supabase request failed: ${listError.message}`);
 
-    const { data: changedItems, error: itemError } = await this.client!
-      .from('todo_items')
-      .select('id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at')
-      .eq('household_id', householdId)
-      .gt('updated_at', since)
-      .order('updated_at', { ascending: true });
+    const { data: changedItems, error: itemError } = await this.client!.from(
+      "todo_items",
+    )
+      .select(
+        "id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at",
+      )
+      .eq("household_id", householdId)
+      .gt("updated_at", since)
+      .order("updated_at", { ascending: true });
 
-    if (itemError) throw new Error(`Supabase request failed: ${itemError.message}`);
+    if (itemError)
+      throw new Error(`Supabase request failed: ${itemError.message}`);
 
     return {
       changedLists: changedLists ?? [],
-      changedItems: changedItems ?? []
+      changedItems: changedItems ?? [],
     };
   }
 }
 
-export const hasuraClient = hasuraConfigured() ? new SupabaseDataClient() : null;
+export const hasuraClient = hasuraConfigured()
+  ? new SupabaseDataClient()
+  : null;
 
 export type HasuraClient = SupabaseDataClient;
 

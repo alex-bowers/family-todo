@@ -1,7 +1,7 @@
-import { get, writable } from 'svelte/store';
-import type { TodoItem, UUID } from '$lib/memory/types';
-import { ItemRepository } from '$lib/memory/item-repository';
-import { sortItemsForDisplay } from '$lib/utils/item-ordering';
+import { get, writable } from "svelte/store";
+import type { TodoItem, UUID } from "$lib/memory/types";
+import { ItemRepository } from "$lib/memory/item-repository";
+import { sortItemsForDisplay } from "$lib/utils/item-ordering";
 
 export interface ItemState {
   items: TodoItem[];
@@ -12,7 +12,7 @@ export interface ItemState {
 const initialState: ItemState = {
   items: [],
   loading: false,
-  error: null
+  error: null,
 };
 
 export class ItemStore {
@@ -22,8 +22,12 @@ export class ItemStore {
     private readonly listId: UUID,
     private readonly repository: Pick<
       ItemRepository,
-      'getItems' | 'createItem' | 'updateItemText' | 'setItemCompletion' | 'deleteItem'
-    >
+      | "getItems"
+      | "createItem"
+      | "updateItemText"
+      | "setItemCompletion"
+      | "deleteItem"
+    >,
   ) {}
 
   subscribe = this.state.subscribe;
@@ -58,30 +62,45 @@ export class ItemStore {
     this.state.update((current) => ({
       ...current,
       loading: false,
-      error: error instanceof Error ? error.message : 'Unexpected item error'
+      error: error instanceof Error ? error.message : "Unexpected item error",
     }));
   }
 
   async load(): Promise<void> {
-    this.state.update((current) => ({ ...current, loading: true, error: null }));
+    this.state.update((current) => ({
+      ...current,
+      loading: true,
+      error: null,
+    }));
 
     try {
       const items = await this.repository.getItems(this.listId);
-      this.state.set({ items: sortItemsForDisplay(items), loading: false, error: null });
+      this.state.set({
+        items: sortItemsForDisplay(items),
+        loading: false,
+        error: null,
+      });
     } catch (error) {
       this.setError(error);
     }
   }
 
   async create(description: string): Promise<void> {
-    this.state.update((current) => ({ ...current, loading: true, error: null }));
+    this.state.update((current) => ({
+      ...current,
+      loading: true,
+      error: null,
+    }));
 
     try {
-      const created = await this.repository.createItem(this.listId, description);
+      const created = await this.repository.createItem(
+        this.listId,
+        description,
+      );
       this.state.update((current) => ({
         ...current,
         loading: false,
-        items: this.insertItem(current.items, created)
+        items: this.insertItem(current.items, created),
       }));
     } catch (error) {
       this.setError(error);
@@ -89,14 +108,18 @@ export class ItemStore {
   }
 
   async updateText(itemId: UUID, description: string): Promise<void> {
-    this.state.update((current) => ({ ...current, loading: true, error: null }));
+    this.state.update((current) => ({
+      ...current,
+      loading: true,
+      error: null,
+    }));
 
     try {
       const updated = await this.repository.updateItemText(itemId, description);
       this.state.update((current) => ({
         ...current,
         loading: false,
-        items: this.replaceItem(current.items, updated)
+        items: this.replaceItem(current.items, updated),
       }));
     } catch (error) {
       this.setError(error);
@@ -104,14 +127,21 @@ export class ItemStore {
   }
 
   async toggleCompletion(itemId: UUID, isCompleted: boolean): Promise<void> {
-    this.state.update((current) => ({ ...current, loading: true, error: null }));
+    this.state.update((current) => ({
+      ...current,
+      loading: true,
+      error: null,
+    }));
 
     try {
-      const updated = await this.repository.setItemCompletion(itemId, isCompleted);
+      const updated = await this.repository.setItemCompletion(
+        itemId,
+        isCompleted,
+      );
       this.state.update((current) => ({
         ...current,
         loading: false,
-        items: this.replaceItem(current.items, updated)
+        items: this.replaceItem(current.items, updated),
       }));
     } catch (error) {
       this.setError(error);
@@ -119,14 +149,20 @@ export class ItemStore {
   }
 
   async remove(itemId: UUID): Promise<void> {
-    this.state.update((current) => ({ ...current, loading: true, error: null }));
+    this.state.update((current) => ({
+      ...current,
+      loading: true,
+      error: null,
+    }));
 
     try {
       await this.repository.deleteItem(itemId);
       this.state.update((current) => ({
         ...current,
         loading: false,
-        items: sortItemsForDisplay(current.items.filter((item) => item.id !== itemId))
+        items: sortItemsForDisplay(
+          current.items.filter((item) => item.id !== itemId),
+        ),
       }));
     } catch (error) {
       this.setError(error);
