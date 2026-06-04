@@ -1,0 +1,3 @@
+# pnpm configuration
+shamefully-hoist=true
+public-hoist-pattern[]=@sveltejs/kit

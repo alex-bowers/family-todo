@@ -4,22 +4,26 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:clear": "tsx scripts/clear-test-data.ts",
+    "test:e2e:clean": "pnpm test:clear && pnpm test:e2e",
     "dev": "vite dev",
     "build": "svelte-kit sync && vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "vitest run",
+    "test": "pnpm run test:unit && pnpm run test:e2e:clean",
+    "test:unit": "vitest run --no-file-parallelism --teardown-timeout=1000",
+    "test:unit:force": "vitest run --no-file-parallelism --teardown-timeout=1000 && exit 0",
     "test:e2e": "playwright test",
-    "deploy:branch": "npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch $(git rev-parse --abbrev-ref HEAD)",
-    "deploy:prod": "npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch main",
+    "deploy:branch": "pnpm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch $(git rev-parse --abbrev-ref HEAD)",
+    "deploy:prod": "pnpm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch main",
     "migration:dry-run": "tsx scripts/migration/migrate-hasura-to-supabase.ts --dry-run --output test-results/migration",
     "migration:verify": "tsx scripts/migration/verify-parity.ts test-results/migration"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.103.3"
+    "@supabase/supabase-js": "^2.103.3",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
@@ -27,6 +31,7 @@
     "@sveltejs/adapter-cloudflare": "^4.7.0",
     "@sveltejs/kit": "^2.18.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "dotenv": "^17.4.2",
     "eslint": "^9.25.0",
     "eslint-plugin-svelte": "^2.46.1",
     "globals": "^16.0.0",

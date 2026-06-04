@@ -50,7 +50,7 @@ Pass criteria:
 ## Command Checklist
 
 ```bash
-npm run lint
-npm run test:unit
-npm run test:e2e -- tests/e2e/items-flow.spec.ts
+pnpm run lint
+pnpm run test:unit
+pnpm run test:e2e -- tests/e2e/items-flow.spec.ts
 ```

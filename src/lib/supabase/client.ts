@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseRuntimeConfig, hasSupabaseRuntimeConfig } from '$lib/utils/config';
+import ws from 'ws';
 
 let singleton: SupabaseClient | null = null;
 
@@ -16,8 +17,20 @@ export function getSupabaseClient(): SupabaseClient | null {
   singleton = createClient(config.url, config.anonKey, {
     auth: {
       persistSession: false
+    },
+    realtime: {
+      transport: ws
     }
   });
 
   return singleton;
+}
+
+export function resetSupabaseClient(): void {
+  if (singleton) {
+    singleton.removeAllChannels();
+    // Close any open connections
+    singleton.realtime.disconnect();
+    singleton = null;
+  }
 }

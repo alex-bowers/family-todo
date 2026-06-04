@@ -1,7 +1,14 @@
 import { expect, test } from '@playwright/test';
 
+const householdId = '00000000-0000-0000-0000-000000000002'; // Test household ID
+
 test.describe('PWA installability', () => {
   test('exposes manifest metadata and install status region', async ({ page, context }) => {
+    await page.addInitScript(({ seededHouseholdId }) => {
+      localStorage.clear();
+      localStorage.setItem('familytodo:household-id', seededHouseholdId);
+    }, { seededHouseholdId: householdId });
+
     await page.goto('/');
 
     const manifestHref = await page.locator('link[rel="manifest"]').getAttribute('href');

@@ -8,9 +8,27 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts', 'tests/contract/**/*.test.ts'],
     environment: 'node',
     globals: true,
+    setupFiles: ['./tests/vitest.setup.ts'],
+    teardownTimeout: 1000,
+    retry: 1,
+    isolate: true,
+    threads: false,
+    singleThread: true,
+    watch: false,
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true
+      }
+    },
     coverage: {
       reporter: ['text', 'lcov'],
       include: ['src/lib/**/*.ts']
+    }
+  },
+  server: {
+    watch: {
+      ignored: ['**/node_modules/**', '**/.git/**']
     }
   }
 });
