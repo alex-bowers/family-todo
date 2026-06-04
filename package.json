@@ -10,16 +10,17 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "npm run test:unit && npm run test:e2e",
+    "test": "pnpm run test:unit && pnpm run test:e2e",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "deploy:branch": "npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch $(git rev-parse --abbrev-ref HEAD)",
-    "deploy:prod": "npm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch main",
+    "deploy:branch": "pnpm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch $(git rev-parse --abbrev-ref HEAD)",
+    "deploy:prod": "pnpm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch main",
     "migration:dry-run": "tsx scripts/migration/migrate-hasura-to-supabase.ts --dry-run --output test-results/migration",
     "migration:verify": "tsx scripts/migration/verify-parity.ts test-results/migration"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.103.3"
+    "@supabase/supabase-js": "^2.103.3",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

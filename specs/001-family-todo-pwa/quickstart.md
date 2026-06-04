@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Node.js 20+
-- npm (or pnpm)
+- pnpm
 - Cloudflare account with Pages access
 - Hasura Cloud account
 
@@ -74,15 +74,15 @@ Set variables locally and in Cloudflare Pages:
 
 Validated on 2026-04-17 from project root:
 
-1. `npm run build`
-2. `npm run test:unit`
-3. `npm run test:e2e`
+1. `pnpm run build`
+2. `pnpm run test:unit`
+3. `pnpm run test:e2e`
 
 Outcome summary:
 - Build: PASS
 - Unit + contract: PASS (11 tests)
 - E2E: PASS (4 tests: lists, items, pwa-install, offline-sync)
-- Lint: PASS (`npm run lint`)
+- Lint: PASS (`pnpm run lint`)
 
 Known caveat:
 - Vitest reports a non-fatal hanging-process timeout after successful completion. This did not block passing status.

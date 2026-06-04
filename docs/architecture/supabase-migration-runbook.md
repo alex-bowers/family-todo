@@ -2,8 +2,8 @@
 
 ## Rehearsal
 
-1. Run `npm run migration:dry-run`.
-2. Run `npm run migration:verify`.
+1. Run `pnpm run migration:dry-run`.
+2. Run `pnpm run migration:verify`.
 3. Review JSON outputs in `test-results/migration/`.
 
 ## Cutover

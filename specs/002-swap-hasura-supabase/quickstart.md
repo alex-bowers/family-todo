@@ -3,7 +3,7 @@
 ## 1. Prerequisites
 
 - Node.js 20.x
-- npm
+- pnpm
 - Existing FamilyToDo workspace checked out on branch 002-migrate-to-supabase
 - Supabase project credentials for non-production validation
 
@@ -12,9 +12,9 @@
 Run from repository root:
 
 ```bash
-npm install
-npm run lint
-npm test
+pnpm install
+pnpm run lint
+pnpm test
 ```
 
 Expected result:
@@ -37,8 +37,8 @@ Validation goal:
 Execute migration tooling against a rehearsal dataset and produce verification artifacts.
 
 ```bash
-npm run migration:dry-run
-npm run migration:verify
+pnpm run migration:dry-run
+pnpm run migration:verify
 ```
 
 Required verification outputs:
@@ -56,8 +56,8 @@ Gate:
 Run required suites:
 
 ```bash
-npm run test:unit
-npm run test:e2e
+pnpm run test:unit
+pnpm run test:e2e
 ```
 
 Required test coverage before cutover approval:
