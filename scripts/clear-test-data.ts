@@ -34,8 +34,6 @@ async function clearTestData() {
     }
   });
 
-  console.log(`Clearing test data for household: ${TEST_HOUSEHOLD_ID}`);
-
   // Delete all test lists
   const { error: listsError } = await supabase
     .from('todo_lists')
@@ -57,8 +55,6 @@ async function clearTestData() {
     console.error('Error deleting items:', itemsError.message);
     process.exit(1);
   }
-
-  console.log('Test data cleared successfully');
 }
 
 clearTestData().catch((error) => {

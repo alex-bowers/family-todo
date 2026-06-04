@@ -31,7 +31,7 @@ test.describe('List create/delete flow', () => {
     try {
       await expect(page.getByRole('button', { name: /Select list / })).toBeVisible({ timeout: 15000 });
       await expect(page.getByRole('button', { name: `Select list ${firstListName}` })).toBeVisible({ timeout: 5000 });
-    } catch (error) {
+    } catch {
       // Continue with the test even if the first list doesn't appear immediately
     }
 
@@ -43,7 +43,7 @@ test.describe('List create/delete flow', () => {
     try {
       await expect(page.getByRole('button', { name: /Select list / }).first()).toBeVisible({ timeout: 15000 });
       await expect(page.getByRole('button', { name: `Select list ${secondListName}` })).toBeVisible({ timeout: 5000 });
-    } catch (error) {
+    } catch {
       // Continue with the test even if the second list doesn't appear immediately
     }
 
