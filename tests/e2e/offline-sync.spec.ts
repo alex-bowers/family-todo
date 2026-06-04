@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-const householdId = '00000000-0000-0000-0000-000000000001';
-const listId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+const householdId = '00000000-0000-0000-0000-000000000002'; // Test household ID
+const listId = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'; // Unique test list ID
 
 test.describe('Offline sync replay', () => {
   test('queues a mutation while offline and flushes when back online', async ({ page, context }) => {

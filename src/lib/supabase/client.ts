@@ -25,3 +25,12 @@ export function getSupabaseClient(): SupabaseClient | null {
 
   return singleton;
 }
+
+export function resetSupabaseClient(): void {
+  if (singleton) {
+    singleton.removeAllChannels();
+    // Close any open connections
+    singleton.realtime.disconnect();
+    singleton = null;
+  }
+}

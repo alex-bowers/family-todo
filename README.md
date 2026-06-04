@@ -10,3 +10,5 @@ This project uses pnpm for package management. To get started:
 1. Install dependencies: `pnpm install`
 2. Run development server: `pnpm run dev`
 3. Run tests: `pnpm test`
+
+See [Testing Documentation](docs/testing.md) for more information about running tests and known issues.

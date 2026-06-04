@@ -15,6 +15,11 @@ export function getSupabaseRuntimeConfig(): SupabaseRuntimeConfig {
 }
 
 export function hasSupabaseRuntimeConfig(): boolean {
+  // Check if network is disabled for testing
+  if (typeof localStorage !== 'undefined' && localStorage.getItem('familytodo:disable-network') === 'true') {
+    return false;
+  }
+
   const config = getSupabaseRuntimeConfig();
   return Boolean(config.url && config.anonKey);
 }
