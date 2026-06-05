@@ -22,7 +22,7 @@ test("migration smoke keeps core list flow usable", async ({ page }) => {
 
     try {
       await expect(
-        page.getByRole("button", { name: "Select list Migration Smoke" }),
+        page.getByRole("button", { name: "Open list Migration Smoke" }),
       ).toBeVisible({ timeout: 2000 });
       return;
     } catch {

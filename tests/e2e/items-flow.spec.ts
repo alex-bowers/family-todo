@@ -1,11 +1,14 @@
 import { expect, test } from "@playwright/test";
+import { createTestItem } from "./helpers";
 
 const householdId = "00000000-0000-0000-0000-000000000002"; // Test household ID
 const listId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"; // Unique test list ID
 const slowExpect = { timeout: 15000 };
 
 test.describe("Item lifecycle flow", () => {
-  test("creates, edits, completes, and deletes an item", async ({ page }) => {
+  test("creates, edits, completes, and deletes an item with confirmation", async ({
+    page,
+  }) => {
     await page.addInitScript(
       ({ seededHouseholdId, seededListId }) => {
         localStorage.clear();
@@ -55,16 +58,7 @@ test.describe("Item lifecycle flow", () => {
 
     // Use a fixed test data name to avoid timestamp issues
     const testItemName = "Buy milk";
-    await page.getByLabel("New item").fill(testItemName);
-    await page.getByRole("button", { name: "Add item" }).click();
-
-    // Wait a bit for the item to be processed
-    await page.waitForTimeout(2000);
-
-    // Wait for the item to appear - it should appear quickly in offline mode
-    await expect(
-      page.locator(".item-text", { hasText: testItemName }),
-    ).toBeVisible({ timeout: 10000 });
+    await createTestItem(page, testItemName);
 
     // Wait a bit more for the UI to stabilize
     await page.waitForTimeout(1000);
@@ -86,12 +80,100 @@ test.describe("Item lifecycle flow", () => {
       page.locator(".item-text.completed", { hasText: testItemName }),
     ).toBeVisible({ timeout: 5000 });
 
+    // Test item deletion with confirmation
+    page.on("dialog", (dialog) => {
+      expect(dialog.type()).toBe("confirm");
+      expect(dialog.message()).toContain(
+        "Are you sure you want to delete this item?",
+      );
+      dialog.accept(); // Confirm deletion
+    });
+
     await page
       .getByRole("button", { name: `Delete item ${testItemName}` })
       .click();
     await expect(
       page.locator(".item-text", { hasText: testItemName }),
     ).toHaveCount(0, slowExpect);
+  });
+
+  test("cancels item deletion with confirmation dialog", async ({ page }) => {
+    await page.addInitScript(
+      ({ seededHouseholdId, seededListId }) => {
+        localStorage.clear();
+        localStorage.setItem("familytodo:household-id", seededHouseholdId);
+        localStorage.setItem(
+          `familytodo:snapshot:${seededHouseholdId}`,
+          JSON.stringify({
+            lists: [
+              {
+                id: seededListId,
+                householdId: seededHouseholdId,
+                title: "Test Groceries",
+                sortOrder: 0,
+                createdAt: "2026-04-17T00:00:00.000Z",
+                updatedAt: "2026-04-17T00:00:00.000Z",
+                deletedAt: null,
+              },
+            ],
+            items: [],
+            serverTs: "2026-04-17T00:00:00.000Z",
+          }),
+        );
+        // Disable Supabase client to force local item creation
+        localStorage.setItem("familytodo:disable-network", "true");
+      },
+      { seededHouseholdId: householdId, seededListId: listId },
+    );
+
+    await page.goto(`/lists/${listId}`);
+
+    await expect(page.getByTestId("item-hydrated")).toHaveText(
+      "ready",
+      slowExpect,
+    );
+    await expect(page.getByLabel("New item")).toBeVisible(slowExpect);
+    await expect(page.getByRole("button", { name: "Add item" })).toBeEnabled(
+      slowExpect,
+    );
+
+    // Set the app to offline mode to ensure items are created locally
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("offline"));
+    });
+
+    // Wait a bit for the offline status to be processed
+    await page.waitForTimeout(1000);
+
+    // Use a fixed test data name to avoid timestamp issues
+    const testItemName = "Buy milk";
+    await createTestItem(page, testItemName);
+
+    // Wait a bit more for the UI to stabilize
+    await page.waitForTimeout(1000);
+
+    // Verify the item is visible
+    await expect(
+      page.locator(".item-text", { hasText: testItemName }),
+    ).toBeVisible();
+
+    // Test item deletion cancellation
+    page.on("dialog", (dialog) => {
+      expect(dialog.type()).toBe("confirm");
+      expect(dialog.message()).toContain(
+        "Are you sure you want to delete this item?",
+      );
+      dialog.dismiss(); // Cancel deletion
+    });
+
+    await page
+      .getByRole("button", { name: `Delete item ${testItemName}` })
+      .click();
+
+    // Item should still be visible after cancellation
+    await expect(
+      page.locator(".item-text", { hasText: testItemName }),
+    ).toBeVisible(slowExpect);
   });
 
   test("renders incomplete-first alphabetical ordering and supports larger toggle target", async ({
@@ -274,5 +356,62 @@ test.describe("Item lifecycle flow", () => {
     await expect(
       page.locator(".item-text", { hasText: "Buy milk extra" }),
     ).toBeVisible(slowExpect);
+  });
+
+  test("keeps new item input visible on mobile with long list", async ({
+    page,
+  }) => {
+    // Set viewport to mobile size
+    await page.setViewportSize({ width: 375, height: 667 });
+
+    await page.addInitScript(
+      ({ seededHouseholdId, seededListId }) => {
+        localStorage.clear();
+        localStorage.setItem("familytodo:household-id", seededHouseholdId);
+        localStorage.setItem(
+          `familytodo:snapshot:${seededHouseholdId}`,
+          JSON.stringify({
+            lists: [
+              {
+                id: seededListId,
+                householdId: seededHouseholdId,
+                title: "Long List Test",
+                sortOrder: 0,
+                createdAt: "2026-04-17T00:00:00.000Z",
+                updatedAt: "2026-04-17T00:00:00.000Z",
+                deletedAt: null,
+              },
+            ],
+            items: Array.from({ length: 50 }, (_, i) => ({
+              id: `item-${i}`,
+              listId: seededListId,
+              description: `Test item ${i + 1}`,
+              isCompleted: i % 3 === 0, // Every third item is completed
+              completedAt: i % 3 === 0 ? "2026-04-17T00:00:30.000Z" : null,
+              createdAt: "2026-04-17T00:00:00.000Z",
+              updatedAt: "2026-04-17T00:00:00.000Z",
+              deletedAt: null,
+            })),
+            serverTs: "2026-04-17T00:00:00.000Z",
+          }),
+        );
+        // Disable Supabase client to force local item usage
+        localStorage.setItem("familytodo:disable-network", "true");
+      },
+      { seededHouseholdId: householdId, seededListId: listId },
+    );
+
+    await page.goto(`/lists/${listId}`);
+    await expect(page.getByTestId("item-hydrated")).toHaveText(
+      "ready",
+      slowExpect,
+    );
+
+    // Focus the new item input
+    const newItemInput = page.getByLabel("New item");
+    await newItemInput.focus();
+
+    // Verify the input is still visible (not scrolled out of view)
+    await expect(newItemInput).toBeInViewport({ ratio: 0.5 });
   });
 });
