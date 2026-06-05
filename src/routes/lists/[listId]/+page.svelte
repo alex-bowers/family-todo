@@ -164,21 +164,29 @@
 </script>
 
 <main>
-  <h1>{listTitle || 'List Details'}</h1>
-  <p data-testid="item-hydrated" hidden={!hydrated}>ready</p>
-  <p data-testid="sync-status" role="status" aria-live="polite">{syncStatus}</p>
-  <p>
-    <a href="/">Back to lists</a>
+  <div class="actions">
+    <a href="/" class="button primary">Back to lists</a>
     <button
       type="button"
-      class="danger"
+      class="button danger"
       on:click={handleDeleteList}
       aria-label={`Delete list ${listTitle}`}
       data-testid="delete-list-button"
     >
       Delete List
     </button>
-  </p>
+  </div>
+  <div class="header">
+    <h1>{listTitle || 'List Details'}</h1>
+    <div
+      data-testid="item-hydrated"
+      class="hydration-indicator"
+      class:active={hydrated}
+      role="status"
+      aria-label={hydrated ? 'Connected' : 'Loading'}
+    />
+  </div>
+  <span data-testid="sync-status" role="status" aria-live="polite">{syncStatus}</span>
 
   <TodoItemList
     items={$itemState.items}
@@ -198,17 +206,56 @@
     gap: 1rem;
   }
 
-  .danger {
-    background-color: #dc2626;
-    color: white;
+  .actions {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .hydration-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    transition: background-color 0.2s ease;
+  }
+
+  .hydration-indicator.active {
+    background: #10b981;
+  }
+
+  .button {
     border: none;
     border-radius: 0.25rem;
     padding: 0.5rem 1rem;
     cursor: pointer;
-    margin-left: 1rem;
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: none;
+    display: inline-block;
   }
 
-  .danger:hover {
+  .button.primary {
+    background-color: #3b82f6;
+    color: white;
+  }
+
+  .button.primary:hover {
+    background-color: #2563eb;
+  }
+
+  .button.danger {
+    background-color: #dc2626;
+    color: white;
+  }
+
+  .button.danger:hover {
     background-color: #b91c1c;
   }
 </style>

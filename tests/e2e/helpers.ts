@@ -1,5 +1,7 @@
 import { Page, expect } from "@playwright/test";
 
+const slowExpect = { timeout: 15000 };
+
 /**
  * Reusable Playwright helpers for seeding and interacting with lists and items
  */
@@ -9,12 +11,12 @@ export async function createTestList(
   listName: string,
 ): Promise<string> {
   // Wait for page hydration
-  await expect(page.getByTestId("hydrated")).toHaveText("ready", { timeout: 15000 });
+  await expect(page.getByTestId("hydrated")).toHaveText("ready", slowExpect);
 
   const newListInput = page.getByLabel("New list");
   const createButton = page.getByRole("button", { name: "Create list" });
 
-  await expect(createButton).toBeEnabled({ timeout: 15000 });
+  await expect(createButton).toBeEnabled(slowExpect);
 
   // Fill the list name
   await newListInput.fill(listName);
@@ -30,7 +32,7 @@ export async function createTestList(
   await page
     .getByRole("button", { name: /Open list / })
     .first()
-    .waitFor({ state: "visible", timeout: 15000 });
+    .waitFor({ state: "visible", timeout: slowExpect.timeout });
 
   // Then verify our specific list is visible with a longer timeout
   // This handles cases where the list takes a moment to render
