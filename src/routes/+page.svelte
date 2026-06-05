@@ -57,21 +57,7 @@
       error={$listState.error}
       onSelect={(id) => store.select(id)}
       onCreate={(title) => store.create(title)}
-      onDelete={(id) => store.remove(id)}
     />
-
-    <section class="detail" aria-live="polite">
-      {#if $listState.selectedListId}
-        <p>
-          Selected list: {$listState.lists.find((list) => list.id === $listState.selectedListId)?.title}
-        </p>
-        <p>
-          <a href={`/lists/${$listState.selectedListId}`}>Open selected list</a>
-        </p>
-      {:else}
-        <p>Create a list to get started.</p>
-      {/if}
-    </section>
   </section>
 </main>
 
@@ -86,13 +72,6 @@
     display: grid;
     gap: 1rem;
     grid-template-columns: minmax(16rem, 24rem) 1fr;
-  }
-
-  .detail {
-    border: 1px solid #ccc;
-    border-radius: 0.75rem;
-    padding: 1rem;
-    background: #fff;
   }
 
   .migration-warning {

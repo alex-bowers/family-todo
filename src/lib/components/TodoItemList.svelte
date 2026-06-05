@@ -1,5 +1,6 @@
 <script>
   import { getItemMatches } from '$lib/utils/item-matching';
+  import { focusAndKeepVisible } from '$lib/utils/mobile-focus';
 
   /** @typedef {import('$lib/memory/types').TodoItem} TodoItem */
   /** @typedef {import('$lib/utils/item-matching').ItemMatch} ItemMatch */
@@ -116,6 +117,12 @@
     await handleUseExistingSuggestion(pendingStrongMatch);
   }
 
+  /** @param {FocusEvent} event */
+  function handleDraftFocus(event) {
+    // Keep the input visible on mobile devices
+    focusAndKeepVisible(event.target);
+  }
+
   /** @param {KeyboardEvent} event */
   function handleDraftKeydown(event) {
     if (event.key === 'ArrowDown') {
@@ -192,6 +199,7 @@
       id="new-item-description"
       name="new-item-description"
       bind:value={newItemDescription}
+      on:focus={handleDraftFocus}
       on:keydown={handleDraftKeydown}
       maxlength="500"
       placeholder="Add a task"

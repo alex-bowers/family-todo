@@ -1,11 +1,11 @@
 <script>
+  import { goto } from '$app/navigation';
+
   export let lists = [];
   export let selectedListId = null;
   export let loading = false;
   export let error = null;
-  export let onSelect;
   export let onCreate;
-  export let onDelete;
 
   let newListTitle = '';
 
@@ -20,8 +20,9 @@
     newListTitle = '';
   }
 
-  async function handleDelete(id) {
-    await onDelete(id);
+  function handleListActivation(id) {
+    // Navigate directly to the list detail page
+    goto(`/lists/${id}`);
   }
 </script>
 
@@ -56,19 +57,12 @@
           <button
             type="button"
             class:selected={selectedListId === list.id}
-            on:click={() => onSelect(list.id)}
+            on:click={() => handleListActivation(list.id)}
             aria-current={selectedListId === list.id ? 'true' : undefined}
-            aria-label={`Select list ${list.title}`}
+            aria-label={`Open list ${list.title}`}
+            data-testid={`list-${list.id}`}
           >
-            {list.title}
-          </button>
-          <button
-            type="button"
-            class="danger"
-            on:click={() => handleDelete(list.id)}
-            aria-label={`Delete list ${list.title}`}
-          >
-            Delete
+            Open list {list.title}
           </button>
         </li>
       {/each}
@@ -129,11 +123,6 @@
   button.selected {
     background: #dbeafe;
     border-color: #1d4ed8;
-  }
-
-  button.danger {
-    border-color: #7f1d1d;
-    color: #7f1d1d;
   }
 
   .error {

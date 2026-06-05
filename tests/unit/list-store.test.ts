@@ -76,4 +76,27 @@ describe("ListStore transitions", () => {
     expect(snapshot.lists.map((list) => list.id)).toEqual([a.id]);
     expect(snapshot.selectedListId).toBe(a.id);
   });
+
+  it("deletes last list and clears selection", async () => {
+    const a = makeList({
+      id: "aaaaaaa1-1111-1111-1111-111111111111",
+      title: "A",
+      sortOrder: 0,
+    });
+
+    const repository = {
+      getLists: vi.fn(async () => [a]),
+      createList: vi.fn(),
+      deleteList: vi.fn(async () => undefined),
+    };
+
+    const store = new ListStore(FIXTURE_HOUSEHOLD_ID, repository);
+    await store.load();
+    store.select(a.id);
+    await store.remove(a.id);
+
+    const snapshot = store.getSnapshot();
+    expect(snapshot.lists).toHaveLength(0);
+    expect(snapshot.selectedListId).toBeNull();
+  });
 });
