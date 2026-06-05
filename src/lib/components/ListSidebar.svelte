@@ -2,7 +2,6 @@
   import { goto } from '$app/navigation';
 
   export let lists = [];
-  export let selectedListId = null;
   export let loading = false;
   export let error = null;
   export let onCreate;
@@ -26,24 +25,7 @@
   }
 </script>
 
-<aside class="list-sidebar" aria-label="Todo lists">
-  <h2>Lists</h2>
-
-  <form on:submit={handleCreate} aria-label="Create list form">
-    <label for="new-list-title">New list</label>
-    <input
-      id="new-list-title"
-      name="new-list-title"
-      bind:value={newListTitle}
-      maxlength="120"
-      required
-      placeholder="Add a list"
-      aria-describedby="list-help"
-    />
-    <p id="list-help">Create separate lists for groceries, chores, or school tasks.</p>
-    <button type="submit" disabled={loading}>Create list</button>
-  </form>
-
+<aside aria-label="Todo lists">
   {#if error}
     <p role="alert" class="error">{error}</p>
   {/if}
@@ -51,31 +33,52 @@
   {#if lists.length === 0}
     <p class="empty-state">No lists yet. Create your first list above.</p>
   {:else}
-    <ul>
+    <div class="list-grid">
       {#each lists as list (list.id)}
-        <li>
-          <button
-            type="button"
-            class:selected={selectedListId === list.id}
-            on:click={() => handleListActivation(list.id)}
-            aria-current={selectedListId === list.id ? 'true' : undefined}
-            aria-label={`Open list ${list.title}`}
-            data-testid={`list-${list.id}`}
-          >
-            Open list {list.title}
-          </button>
-        </li>
+        <button
+          type="button"
+          on:click={() => handleListActivation(list.id)}
+          aria-label={`Open list ${list.title}`}
+          data-testid={`list-${list.id}`}
+        >
+          {list.title}
+        </button>
       {/each}
-    </ul>
+    </div>
   {/if}
+
+  <hr>
+
+  <h2 class="heading">Add New List</h2>
+  <form on:submit={handleCreate} aria-label="Create list form">
+    <input
+      id="new-list-title"
+      name="new-list-title"
+      bind:value={newListTitle}
+      maxlength="120"
+      required
+      placeholder="New list name"
+      aria-describedby="list-help"
+    />
+    <button type="submit" disabled={loading}>Create list</button>
+    <span id="list-help">Create separate lists for groceries, chores, or school tasks.</span>
+  </form>
 </aside>
 
 <style>
-  .list-sidebar {
-    border: 1px solid #ccc;
-    border-radius: 0.75rem;
-    padding: 1rem;
-    background: #fff;
+  .list-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .heading {
+    margin: 0 0 1rem;
+  }
+
+  hr {
+    margin: 2rem 0;
   }
 
   form {
@@ -93,19 +96,6 @@
     margin: 0;
   }
 
-  ul {
-    margin: 1rem 0 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 0.5rem;
-  }
-
-  li {
-    display: flex;
-    gap: 0.5rem;
-  }
-
   button {
     border: 1px solid #1f2937;
     border-radius: 0.4rem;
@@ -120,9 +110,8 @@
     outline-offset: 1px;
   }
 
-  button.selected {
-    background: #dbeafe;
-    border-color: #1d4ed8;
+  #list-help {
+    visibility: hidden;
   }
 
   .error {

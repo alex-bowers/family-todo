@@ -40,14 +40,21 @@
 </script>
 
 <main>
-  <h1>FamilyToDo</h1>
-  <p>Shared family lists with cross-device memory.</p>
+  <div class="header">
+    <h1 class="heading">FamilyToDo</h1>
+    <div
+      data-testid="hydrated"
+      class="hydration-indicator"
+      class:active={hydrated}
+      role="status"
+      aria-label={hydrated ? 'Connected' : 'Loading'}
+    ></div>
+  </div>
   {#if !backendConfigured}
     <p role="status" aria-live="polite" class="migration-warning">
       Running in offline-compatible mode while Supabase configuration is incomplete.
     </p>
   {/if}
-  <p data-testid="hydrated" hidden={!hydrated}>ready</p>
 
   <section class="layout">
     <ListSidebar
@@ -64,8 +71,33 @@
 <style>
   main {
     padding: 1rem;
-    display: grid;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 1rem;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .heading {
+    margin: 0;
+  }
+
+  .hydration-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    transition: background-color 0.2s ease;
+  }
+
+  .hydration-indicator.active {
+    background: #10b981;
   }
 
   .layout {

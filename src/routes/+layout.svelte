@@ -37,9 +37,7 @@
 <style>
 	.shell {
 		display: grid;
-		gap: 1rem;
-		padding: 1rem;
-		max-width: 72rem;
 		margin: 0 auto;
+		font-family: system-ui, sans-serif;
 	}
 </style>
