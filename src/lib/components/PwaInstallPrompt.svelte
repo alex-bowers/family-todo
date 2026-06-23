@@ -4,18 +4,18 @@
   let deferredInstallEvent = null;
   let installSupported = false;
 
+  /** Trigger the browser's native install dialog */
   async function installApp() {
-    const installEvent = deferredInstallEvent;
-
-    await installEvent.prompt();
-
+    if (!deferredInstallEvent) return;
+    await deferredInstallEvent.prompt();
     deferredInstallEvent = null;
     installSupported = false;
   }
 
   onMount(() => {
     const handleBeforeInstallPrompt = (event) => {
-      event.preventDefault();
+      // Defer so we can trigger it on user gesture, but don't
+      // preventDefault — the browser may still show its own prompt.
       deferredInstallEvent = event;
       installSupported = true;
     };
@@ -35,26 +35,14 @@
   });
 </script>
 
-{#if !installSupported}
-  <section class="install" aria-label="Install FamilyToDo">
-    <span>For a better experience,</span>
-    <button type="button" on:click={installApp}>
-      Install app
-    </button>
-  </section>
+{#if installSupported}
+  <button type="button" on:click={installApp} class="install-btn">
+    Install app
+  </button>
 {/if}
 
 <style>
-  .install {
-    padding: 0.75rem;
-    background: #f8faf9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-  }
-
-  button {
+  .install-btn {
     width: fit-content;
     border: 1px solid #1f2937;
     border-radius: 0.4rem;
@@ -62,7 +50,7 @@
     background: #ffffff;
   }
 
-  button:focus-visible {
+  .install-btn:focus-visible {
     outline: 3px solid #0b5fff;
     outline-offset: 1px;
   }
