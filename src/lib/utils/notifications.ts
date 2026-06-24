@@ -250,11 +250,35 @@ export function shouldShowWeeklyReminder(): boolean {
   return lastShownDate.getTime() < mostRecentTarget.getTime();
 }
 
+/** Module-level timeout ID so that repeated calls cancel the previous schedule. */
+let pendingTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Cancel any pending weekly notification timeout.
+ * Safe to call even when nothing is scheduled.
+ */
+export function cancelWeeklyNotification(): void {
+  if (pendingTimeoutId !== null) {
+    clearTimeout(pendingTimeoutId);
+    pendingTimeoutId = null;
+    logger.info("Cancelled pending weekly notification");
+  }
+}
+
 /**
  * Schedule the weekly notification.
- * Returns a cleanup function to cancel the timeout.
+ *
+ * Calling this function is **idempotent**: any previously scheduled timeout is
+ * cancelled before a new one is set, so multiple calls will never produce
+ * duplicate notifications.
+ *
+ * Returns a cleanup function that cancels the scheduled timeout. Callers should
+ * invoke it on unmount / teardown to avoid leaked timeouts.
  */
 export function scheduleWeeklyNotification(): () => void {
+  // Always cancel any existing schedule first — guarantees idempotency.
+  cancelWeeklyNotification();
+
   if (!isWeeklyNotificationEnabled()) {
     return () => {};
   }
@@ -284,7 +308,8 @@ export function scheduleWeeklyNotification(): () => void {
     delayMs,
   });
 
-  const timeoutId = setTimeout(() => {
+  pendingTimeoutId = setTimeout(() => {
+    pendingTimeoutId = null;
     if (isWeeklyNotificationEnabled() && getNotificationPermission() === "granted") {
       void (async () => {
         await showWeeklyReminder();
@@ -295,5 +320,5 @@ export function scheduleWeeklyNotification(): () => void {
     scheduleWeeklyNotification();
   }, delayMs);
 
-  return () => clearTimeout(timeoutId);
+  return () => cancelWeeklyNotification();
 }

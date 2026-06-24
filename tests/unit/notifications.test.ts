@@ -9,6 +9,7 @@ import {
   notificationsSupported,
   getNotificationPermission,
   scheduleWeeklyNotification,
+  cancelWeeklyNotification,
 } from "$lib/utils/notifications";
 
 // ---------------------------------------------------------------------------
@@ -320,6 +321,38 @@ describe("scheduleWeeklyNotification", () => {
     expect(delay).toBeGreaterThan(0);
 
     cleanup();
+  });
+
+  it("cancels previous timeout when called again (idempotent)", () => {
+    setWeeklyNotificationEnabled(true);
+    vi.setSystemTime(utcDate(2026, 6, 24, 10, 0, 0));
+
+    const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
+
+    const cleanup1 = scheduleWeeklyNotification();
+    // Calling again should cancel the first timeout before scheduling a new one
+    const cleanup2 = scheduleWeeklyNotification();
+
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+
+    cleanup2();
+  });
+
+  it("cancelWeeklyNotification cancels the pending timeout", () => {
+    setWeeklyNotificationEnabled(true);
+    vi.setSystemTime(utcDate(2026, 6, 24, 10, 0, 0));
+
+    const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
+
+    scheduleWeeklyNotification();
+    cancelWeeklyNotification();
+
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+  });
+
+  it("cancelWeeklyNotification is safe when nothing is scheduled", () => {
+    // Should not throw
+    cancelWeeklyNotification();
   });
 });
 

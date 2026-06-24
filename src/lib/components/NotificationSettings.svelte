@@ -6,10 +6,12 @@
     isWeeklyNotificationEnabled,
     setWeeklyNotificationEnabled,
     scheduleWeeklyNotification,
+    cancelWeeklyNotification,
   } from '$lib/utils/notifications';
 
   let permission: NotificationPermission = 'default';
   let enabled = false;
+  let cancelNotification: (() => void) | null = null;
 
   async function toggleNotifications() {
     if (!enabled) {
@@ -18,11 +20,13 @@
       if (result === 'granted') {
         enabled = true;
         setWeeklyNotificationEnabled(true);
-        scheduleWeeklyNotification();
+        cancelNotification = scheduleWeeklyNotification();
       }
     } else {
       enabled = false;
       setWeeklyNotificationEnabled(false);
+      cancelWeeklyNotification();
+      cancelNotification = null;
     }
   }
 
@@ -32,8 +36,12 @@
     enabled = isWeeklyNotificationEnabled();
 
     if (enabled && permission === 'granted') {
-      scheduleWeeklyNotification();
+      cancelNotification = scheduleWeeklyNotification();
     }
+
+    return () => {
+      cancelWeeklyNotification();
+    };
   });
 </script>
 

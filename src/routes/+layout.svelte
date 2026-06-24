@@ -27,7 +27,8 @@
 		}
 
 		void navigator.serviceWorker.register('/service-worker.js');
-		scheduleWeeklyNotification();
+		const cancelNotification = scheduleWeeklyNotification();
+		return cancelNotification;
 	});
 </script>
 
