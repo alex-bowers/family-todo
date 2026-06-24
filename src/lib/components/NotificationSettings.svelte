@@ -5,17 +5,14 @@
     requestNotificationPermission,
     isWeeklyNotificationEnabled,
     setWeeklyNotificationEnabled,
-    showWeeklyReminder,
     scheduleWeeklyNotification,
   } from '$lib/utils/notifications';
 
   let permission = getNotificationPermission();
   let enabled = isWeeklyNotificationEnabled();
-  let showTestSuccess = false;
 
   async function toggleNotifications() {
     if (!enabled) {
-      // Turning on
       const result = await requestNotificationPermission();
       permission = result;
       if (result === 'granted') {
@@ -24,21 +21,9 @@
         scheduleWeeklyNotification();
       }
     } else {
-      // Turning off
       enabled = false;
       setWeeklyNotificationEnabled(false);
     }
-  }
-
-  async function testNotification() {
-    if (permission !== 'granted') {
-      return;
-    }
-    await showWeeklyReminder();
-    showTestSuccess = true;
-    setTimeout(() => {
-      showTestSuccess = false;
-    }, 3000);
   }
 
   onMount(() => {
@@ -48,153 +33,60 @@
   });
 </script>
 
-<section class="notification-settings" aria-label="Notification settings">
-  <div class="row">
-    <label class="toggle-label" for="weekly-notification-toggle">
-      <span class="toggle-text">Weekly Sunday reminder (18:05 UK)</span>
-      <span class="toggle-description">
-        "Has everything been added to the shopping list?"
-      </span>
-    </label>
-    <button
-      id="weekly-notification-toggle"
-      type="button"
-      role="switch"
-      aria-checked={enabled}
-      aria-label="Toggle weekly Sunday reminder notification"
-      class="toggle"
-      class:on={enabled}
-      on:click={toggleNotifications}
-    >
-      <span class="toggle-knob" aria-hidden="true"></span>
-    </button>
-  </div>
-
-  {#if enabled}
-    <div class="test-row">
-      <button type="button" class="test-btn" on:click={testNotification}>
-        Test notification now
-      </button>
-      {#if showTestSuccess}
-        <span class="test-success" role="status">Sent!</span>
-      {/if}
-    </div>
-  {/if}
-
-  {#if permission === 'denied'}
-    <p class="warning" role="alert">
-      Notifications are blocked. Enable them in your browser settings to use this feature.
-    </p>
-  {/if}
-</section>
+<button
+  type="button"
+  class="bell"
+  class:on={enabled}
+  class:blocked={permission === 'denied'}
+  aria-label={enabled ? 'Weekly reminder on' : 'Weekly reminder off'}
+  title={enabled ? 'Weekly reminder on' : 'Weekly reminder off'}
+  on:click={toggleNotifications}
+>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+    {#if enabled}
+      <line x1="18" y1="2" x2="22" y2="6"/>
+      <line x1="22" y1="2" x2="18" y2="6"/>
+    {/if}
+  </svg>
+</button>
 
 <style>
-  .notification-settings {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: #f8faf9;
-    border-radius: 0.5rem;
-  }
-
-  .row {
+  .bell {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .toggle-label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    cursor: pointer;
-    flex: 1;
-  }
-
-  .toggle-text {
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-
-  .toggle-description {
-    font-size: 0.85rem;
-    color: #6b7280;
-  }
-
-  .toggle {
-    position: relative;
-    width: 48px;
-    height: 28px;
-    border-radius: 14px;
-    border: none;
-    background: #d1d5db;
-    cursor: pointer;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
     padding: 0;
-    transition: background-color 0.2s ease;
-    flex-shrink: 0;
-  }
-
-  .toggle.on {
-    background: #10b981;
-  }
-
-  .toggle:focus-visible {
-    outline: 3px solid #0b5fff;
-    outline-offset: 2px;
-  }
-
-  .toggle-knob {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #fff;
-    transition: transform 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  }
-
-  .toggle.on .toggle-knob {
-    transform: translateX(20px);
-  }
-
-  .test-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .test-btn {
-    background: #fff;
-    border: 1px solid #1f2937;
-    border-radius: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.9rem;
+    border: none;
+    background: transparent;
+    color: #9ca3af;
     cursor: pointer;
-    font-weight: 500;
+    border-radius: 50%;
+    transition: color 0.2s ease, background-color 0.2s ease;
   }
 
-  .test-btn:hover {
+  .bell:hover {
     background: #f3f4f6;
   }
 
-  .test-btn:focus-visible {
-    outline: 3px solid #0b5fff;
+  .bell:focus-visible {
+    outline: 2px solid #0b5fff;
     outline-offset: 1px;
   }
 
-  .test-success {
-    font-size: 0.9rem;
-    color: #10b981;
-    font-weight: 500;
+  .bell svg {
+    width: 20px;
+    height: 20px;
   }
 
-  .warning {
-    margin: 0;
-    font-size: 0.85rem;
-    color: #dc2626;
+  .bell.on {
+    color: #10b981;
+  }
+
+  .bell.blocked {
+    color: #ef4444;
   }
 </style>

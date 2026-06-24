@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import ListSidebar from '$lib/components/ListSidebar.svelte';
+  import NotificationSettings from '$lib/components/NotificationSettings.svelte';
   import { resolveDeviceId, resolveHouseholdId } from '$lib/memory/household';
   import { ListRepository } from '$lib/memory/list-repository';
   import { ListStore } from '$lib/stores/list-store';
@@ -42,13 +43,16 @@
 <main>
   <div class="header">
     <h1 class="heading">FamilyToDo</h1>
-    <div
-      data-testid="hydrated"
-      class="hydration-indicator"
-      class:active={hydrated}
-      role="status"
-      aria-label={hydrated ? 'Connected' : 'Loading'}
-    ></div>
+    <div class="header-actions">
+      <NotificationSettings />
+      <div
+        data-testid="hydrated"
+        class="hydration-indicator"
+        class:active={hydrated}
+        role="status"
+        aria-label={hydrated ? 'Connected' : 'Loading'}
+      ></div>
+    </div>
   </div>
   {#if !backendConfigured}
     <p role="status" aria-live="polite" class="migration-warning">
@@ -82,10 +86,17 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
+    width: 100%;
   }
 
   .heading {
     margin: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .hydration-indicator {

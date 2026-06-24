@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { dev } from '$app/environment';
 	import PwaInstallPrompt from '$lib/components/PwaInstallPrompt.svelte';
-	import NotificationSettings from '$lib/components/NotificationSettings.svelte';
 	import { scheduleWeeklyNotification } from '$lib/utils/notifications';
 
 	onMount(() => {
@@ -34,7 +33,6 @@
 
 <div class="shell">
 	<PwaInstallPrompt />
-	<NotificationSettings />
 	<slot />
 </div>
 
