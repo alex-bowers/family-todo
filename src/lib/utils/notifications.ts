@@ -164,29 +164,31 @@ export function getNextSundayAt1805UK(from: Date = new Date()): Date {
     10,
   );
 
-  // Build the final UTC timestamp that corresponds to Sunday 18:05 UK time
-  // We do this by creating the date in UK timezone and then converting to UTC
-  const ukTimeString = `${targetYear}-${String(targetMonth).padStart(2, "0")}-${String(targetDay).padStart(2, "0")}T${String(TARGET_HOUR).padStart(2, "0")}:${String(TARGET_MINUTE).padStart(2, "0")}:00`;
-
-  // Use the Intl API to get the timezone offset
-  const ukDate = new Date(ukTimeString);
-  const ukOffsetMs =
-    ukDate.getTime() -
-    new Date(
-      ukDate.getUTCFullYear(),
-      ukDate.getUTCMonth(),
-      ukDate.getUTCDate(),
-      ukDate.getUTCHours(),
-      ukDate.getUTCMinutes(),
-    ).getTime();
-
-  // The actual UTC time for 18:05 UK time
-  const actualUtcTime = new Date(
-    Date.UTC(targetYear, targetMonth - 1, targetDay, TARGET_HOUR, TARGET_MINUTE, 0),
+  // Build a UTC "guess" for the target wall-clock time, then adjust it by the
+  // Europe/London offset at that instant (handles GMT/BST correctly).
+  const utcGuessMs = Date.UTC(
+    targetYear,
+    targetMonth - 1,
+    targetDay,
+    TARGET_HOUR,
+    TARGET_MINUTE,
+    0,
   );
-  actualUtcTime.setTime(actualUtcTime.getTime() - ukOffsetMs);
 
-  return actualUtcTime;
+  const offsetParts = formatter.formatToParts(new Date(utcGuessMs));
+  const getOffsetPart = (type: string) =>
+    parseInt(offsetParts.find((p) => p.type === type)?.value ?? "0", 10);
+  const asIfUtcMs = Date.UTC(
+    getOffsetPart("year"),
+    getOffsetPart("month") - 1,
+    getOffsetPart("day"),
+    getOffsetPart("hour"),
+    getOffsetPart("minute"),
+    getOffsetPart("second"),
+  );
+  const ukOffsetMs = asIfUtcMs - utcGuessMs;
+
+  return new Date(utcGuessMs - ukOffsetMs);
 }
 
 /**
