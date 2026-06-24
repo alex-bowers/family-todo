@@ -30,11 +30,11 @@
     }
   }
 
-  function testNotification() {
+  async function testNotification() {
     if (permission !== 'granted') {
       return;
     }
-    showWeeklyReminder();
+    await showWeeklyReminder();
     showTestSuccess = true;
     setTimeout(() => {
       showTestSuccess = false;

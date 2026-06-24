@@ -56,14 +56,31 @@ export function getNotificationPermission(): NotificationPermission {
 
 /**
  * Show the weekly reminder notification immediately.
+ * Uses the service worker when available (required for PWAs),
+ * falling back to the page-level Notification constructor.
  */
-export function showWeeklyReminder(): void {
+export async function showWeeklyReminder(): Promise<void> {
   if (!notificationsSupported() || Notification.permission !== "granted") {
     logger.warn("Cannot show notification: permission not granted");
     return;
   }
 
   try {
+    // Prefer service worker notification — required for reliable display in PWAs
+    if ("serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification("FamilyToDo", {
+        body: "Has everything been added to the shopping list?",
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag: "familytodo-weekly-reminder",
+        requireInteraction: false,
+      });
+      logger.info("Weekly reminder notification shown via service worker");
+      return;
+    }
+
+    // Fallback for browsers without service worker support
     const notification = new Notification("FamilyToDo", {
       body: "Has everything been added to the shopping list?",
       icon: "/icons/icon-192.png",
@@ -246,7 +263,7 @@ export function scheduleWeeklyNotification(): () => void {
 
   // Check if we missed one while the app was closed
   if (shouldShowWeeklyReminder()) {
-    showWeeklyReminder();
+    void showWeeklyReminder();
     markWeeklyReminderShown();
   }
 
@@ -265,7 +282,7 @@ export function scheduleWeeklyNotification(): () => void {
 
   const timeoutId = setTimeout(() => {
     if (isWeeklyNotificationEnabled() && getNotificationPermission() === "granted") {
-      showWeeklyReminder();
+      void showWeeklyReminder();
       markWeeklyReminderShown();
     }
     // Re-schedule for next week
