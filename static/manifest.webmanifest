@@ -38,6 +38,15 @@
       "purpose": "any"
     }
   ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Family ToDo lists"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Open lists",
