@@ -61,10 +61,25 @@ self.addEventListener("sync", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  const data = event.data?.json() ?? {};
-  const title = data.title ?? "FamilyToDo";
-  const body = data.body ?? "Has everything been added to the shopping list?";
-  const tag = data.tag ?? "familytodo-weekly-reminder";
+  let payload: unknown = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = {};
+  }
+
+  const data =
+    typeof payload === "object" && payload !== null
+      ? (payload as Record<string, unknown>)
+      : {};
+
+  const title = typeof data.title === "string" ? data.title : "FamilyToDo";
+  const body =
+    typeof data.body === "string"
+      ? data.body
+      : "Has everything been added to the shopping list?";
+  const tag =
+    typeof data.tag === "string" ? data.tag : "familytodo-weekly-reminder";
 
   event.waitUntil(
     self.registration.showNotification(title, {
