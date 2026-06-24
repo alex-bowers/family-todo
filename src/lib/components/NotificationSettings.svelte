@@ -8,8 +8,8 @@
     scheduleWeeklyNotification,
   } from '$lib/utils/notifications';
 
-  let permission = getNotificationPermission();
-  let enabled = isWeeklyNotificationEnabled();
+  let permission: NotificationPermission = 'default';
+  let enabled = false;
 
   async function toggleNotifications() {
     if (!enabled) {
@@ -27,6 +27,10 @@
   }
 
   onMount(() => {
+    // Defer reading browser-only APIs until after mount to avoid SSR hydration mismatches.
+    permission = getNotificationPermission();
+    enabled = isWeeklyNotificationEnabled();
+
     if (enabled && permission === 'granted') {
       scheduleWeeklyNotification();
     }
