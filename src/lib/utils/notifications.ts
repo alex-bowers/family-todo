@@ -284,8 +284,10 @@ export function scheduleWeeklyNotification(): () => void {
 
   const timeoutId = setTimeout(() => {
     if (isWeeklyNotificationEnabled() && getNotificationPermission() === "granted") {
-      void showWeeklyReminder();
-      markWeeklyReminderShown();
+      void (async () => {
+        await showWeeklyReminder();
+        markWeeklyReminderShown();
+      })();
     }
     // Re-schedule for next week
     scheduleWeeklyNotification();
