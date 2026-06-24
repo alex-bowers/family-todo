@@ -184,7 +184,7 @@
       class:active={hydrated}
       role="status"
       aria-label={hydrated ? 'Connected' : 'Loading'}
-    />
+    ></div>
   </div>
   <span data-testid="sync-status" role="status" aria-live="polite">{syncStatus}</span>
 

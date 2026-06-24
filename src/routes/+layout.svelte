@@ -1,7 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
 	import { dev } from '$app/environment';
-	import PwaInstallPrompt from '$lib/components/PwaInstallPrompt.svelte';
 
 	onMount(() => {
 		if (!('serviceWorker' in navigator)) {
@@ -30,7 +29,6 @@
 </script>
 
 <div class="shell">
-	<PwaInstallPrompt />
 	<slot />
 </div>
 
