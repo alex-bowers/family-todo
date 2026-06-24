@@ -59,3 +59,51 @@ self.addEventListener("sync", (event) => {
     event.waitUntil(Promise.resolve());
   }
 });
+
+self.addEventListener("push", (event) => {
+  let payload: unknown = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = {};
+  }
+
+  const data =
+    typeof payload === "object" && payload !== null
+      ? (payload as Record<string, unknown>)
+      : {};
+
+  const title = typeof data.title === "string" ? data.title : "FamilyToDo";
+  const body =
+    typeof data.body === "string"
+      ? data.body
+      : "Has everything been added to the shopping list?";
+  const tag =
+    typeof data.tag === "string" ? data.tag : "familytodo-weekly-reminder";
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag,
+      requireInteraction: false,
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.startsWith(self.location.origin) && "focus" in client) {
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow("/");
+      }
+    }),
+  );
+});
