@@ -59,3 +59,36 @@ self.addEventListener("sync", (event) => {
     event.waitUntil(Promise.resolve());
   }
 });
+
+self.addEventListener("push", (event) => {
+  const data = event.data?.json() ?? {};
+  const title = data.title ?? "FamilyToDo";
+  const body = data.body ?? "Has everything been added to the shopping list?";
+  const tag = data.tag ?? "familytodo-weekly-reminder";
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag,
+      requireInteraction: false,
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.startsWith(self.location.origin) && "focus" in client) {
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow("/");
+      }
+    }),
+  );
+});
