@@ -263,8 +263,10 @@ export function scheduleWeeklyNotification(): () => void {
 
   // Check if we missed one while the app was closed
   if (shouldShowWeeklyReminder()) {
-    void showWeeklyReminder();
-    markWeeklyReminderShown();
+    void (async () => {
+      await showWeeklyReminder();
+      markWeeklyReminderShown();
+    })();
   }
 
   const next = getNextSundayAt1805UK();
