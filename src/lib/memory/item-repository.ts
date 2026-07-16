@@ -7,6 +7,7 @@ import {
   UPDATE_ITEM_TEXT,
 } from "$lib/graphql/operations";
 import { cacheStore } from "$lib/memory/cache";
+import { generateUUID } from "$lib/utils/uuid";
 import {
   fromSupabaseItem,
   type SupabaseItemRow,
@@ -98,7 +99,7 @@ export class ItemRepository {
 
     const now = new Date().toISOString();
     const created: TodoItem = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       listId,
       description: trimmed,
       isCompleted: false,

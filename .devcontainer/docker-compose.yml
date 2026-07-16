@@ -1,5 +1,11 @@
 version: '3.8'
 
+name: family-todoapp
+
+networks:
+  personalnet:
+    external: true
+
 services:
   app:
     build:
@@ -7,7 +13,7 @@ services:
       dockerfile: .devcontainer/Dockerfile
     volumes:
       - ..:/workspaces/family-todo:cached
-      - pnpm-store:/home/node/.local/share/pnpm/store
+      - pnpm_store:/pnpm-store
     environment:
       - NODE_ENV=development
     ports:
@@ -16,13 +22,12 @@ services:
       - "54321:54321"
       - "54322:54322"
       - "54323:54323"
-    command: sleep infinity
     networks:
-      - family-todo-dev
+      - personalnet
+    command: sleep infinity
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.todoapp.rule=Host(`todoapp.test`)"
 
 volumes:
-  pnpm-store:
-
-networks:
-  family-todo-dev:
-    driver: bridge
+  pnpm_store:

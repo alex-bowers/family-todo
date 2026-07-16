@@ -1,4 +1,5 @@
 import type { UUID } from "./types";
+import { generateUUID } from "$lib/utils/uuid";
 
 const DEFAULT_HOUSEHOLD_KEY = "familytodo:household-id";
 const FALLBACK_HOUSEHOLD_ID = "00000000-0000-0000-0000-000000000001";
@@ -30,7 +31,7 @@ export function resolveDeviceId(): string {
       return existing;
     }
 
-    const generated = crypto.randomUUID();
+    const generated = generateUUID();
     localStorage.setItem(key, generated);
     return generated;
   }

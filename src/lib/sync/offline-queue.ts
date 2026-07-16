@@ -1,4 +1,5 @@
 import { cacheStore } from "$lib/memory/cache";
+import { generateUUID } from "$lib/utils/uuid";
 import type { PendingMutation, UUID } from "$lib/memory/types";
 
 export type SyncStatus =
@@ -42,7 +43,7 @@ export class OfflineQueue {
     payload: Record<string, unknown>,
   ): PendingMutation {
     const mutation: PendingMutation = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       op,
       payload,
       clientTs: new Date().toISOString(),

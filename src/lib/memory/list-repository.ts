@@ -1,4 +1,5 @@
 import { cacheStore } from "$lib/memory/cache";
+import { generateUUID } from "$lib/utils/uuid";
 import {
   fromSupabaseList,
   type SupabaseListRow,
@@ -86,7 +87,7 @@ export class ListRepository {
 
     const now = new Date().toISOString();
     const created: TodoList = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       householdId,
       title: trimmed,
       sortOrder,

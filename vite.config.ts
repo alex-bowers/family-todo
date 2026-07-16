@@ -32,5 +32,6 @@ export default defineConfig({
     watch: {
       ignored: ["**/node_modules/**", "**/.git/**"],
     },
+    allowedHosts: ["todoapp.test"]
   },
 });
