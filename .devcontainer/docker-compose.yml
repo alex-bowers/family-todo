@@ -31,6 +31,8 @@ services:
             - "traefik.http.routers.todoapp.tls=true"
             - "traefik.http.services.todoapp.loadbalancer.server.port=5173"
         command: sleep infinity
+        extra_hosts:
+            - "ollama.local:host-gateway"
 
 volumes:
     pnpm_store:

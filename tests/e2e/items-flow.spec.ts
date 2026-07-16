@@ -6,412 +6,437 @@ const listId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"; // Unique test list ID
 const slowExpect = { timeout: 15000 };
 
 test.describe("Item lifecycle flow", () => {
-  test("creates, edits, completes, and deletes an item with confirmation", async ({
-    page,
-  }) => {
-    await page.addInitScript(
-      ({ seededHouseholdId, seededListId }) => {
-        localStorage.clear();
-        localStorage.setItem("familytodo:household-id", seededHouseholdId);
-        localStorage.setItem(
-          `familytodo:snapshot:${seededHouseholdId}`,
-          JSON.stringify({
-            lists: [
-              {
-                id: seededListId,
-                householdId: seededHouseholdId,
-                title: "Test Groceries",
-                sortOrder: 0,
-                createdAt: "2026-04-17T00:00:00.000Z",
-                updatedAt: "2026-04-17T00:00:00.000Z",
-                deletedAt: null,
-              },
-            ],
-            items: [],
-            serverTs: "2026-04-17T00:00:00.000Z",
-          }),
+    test("creates, edits, completes, and deletes an item with confirmation", async ({
+        page,
+    }) => {
+        await page.addInitScript(
+            ({ seededHouseholdId, seededListId }) => {
+                localStorage.clear();
+                localStorage.setItem(
+                    "familytodo:household-id",
+                    seededHouseholdId,
+                );
+                localStorage.setItem(
+                    `familytodo:snapshot:${seededHouseholdId}`,
+                    JSON.stringify({
+                        lists: [
+                            {
+                                id: seededListId,
+                                householdId: seededHouseholdId,
+                                title: "Test Groceries",
+                                sortOrder: 0,
+                                createdAt: "2026-04-17T00:00:00.000Z",
+                                updatedAt: "2026-04-17T00:00:00.000Z",
+                                deletedAt: null,
+                            },
+                        ],
+                        items: [],
+                        serverTs: "2026-04-17T00:00:00.000Z",
+                    }),
+                );
+                // Disable Supabase client to force local item creation
+                localStorage.setItem("familytodo:disable-network", "true");
+            },
+            { seededHouseholdId: householdId, seededListId: listId },
         );
-        // Disable Supabase client to force local item creation
-        localStorage.setItem("familytodo:disable-network", "true");
-      },
-      { seededHouseholdId: householdId, seededListId: listId },
-    );
 
-    await page.goto(`/lists/${listId}`);
+        await page.goto(`/lists/${listId}`);
 
-    await expect(page.getByTestId("item-hydrated")).toHaveText(
-      "ready",
-      slowExpect,
-    );
-    await expect(page.getByLabel("New item")).toBeVisible(slowExpect);
-    await expect(page.getByRole("button", { name: "Add item" })).toBeEnabled(
-      slowExpect,
-    );
+        await expect(page.getByTestId("item-hydrated")).toHaveAttribute(
+            "aria-label",
+            "Connected",
+            slowExpect,
+        );
+        await expect(page.getByLabel("New item")).toBeVisible(slowExpect);
+        await expect(
+            page.getByRole("button", { name: "Add item" }),
+        ).toBeEnabled(slowExpect);
 
-    // Set the app to offline mode to ensure items are created locally
-    await page.evaluate(() => {
-      window.dispatchEvent(new Event("offline"));
+        // Set the app to offline mode to ensure items are created locally
+        await page.evaluate(() => {
+            window.dispatchEvent(new Event("offline"));
+        });
+
+        // Wait a bit for the offline status to be processed
+        await page.waitForTimeout(1000);
+
+        // Use a fixed test data name to avoid timestamp issues
+        const testItemName = "Buy milk";
+        await createTestItem(page, testItemName);
+
+        // Wait a bit more for the UI to stabilize
+        await page.waitForTimeout(1000);
+
+        // Verify the item is visible
+        await expect(
+            page.locator(".item-text", { hasText: testItemName }),
+        ).toBeVisible();
+
+        // Mark the first item as complete
+        const firstCompleteCheckbox = page.getByRole("checkbox").first();
+        await firstCompleteCheckbox.check();
+
+        // Simple verification that at least one checkbox is checked
+        await expect(firstCompleteCheckbox).toBeChecked({ timeout: 5000 });
+
+        // Wait for the item to be marked as completed
+        await expect(
+            page.locator(".item-text.completed", { hasText: testItemName }),
+        ).toBeVisible({ timeout: 5000 });
+
+        // Test item deletion with confirmation
+        page.on("dialog", (dialog) => {
+            expect(dialog.type()).toBe("confirm");
+            expect(dialog.message()).toContain(
+                "Are you sure you want to delete this item?",
+            );
+            dialog.accept(); // Confirm deletion
+        });
+
+        await page
+            .getByRole("button", { name: `Delete item ${testItemName}` })
+            .click();
+        await expect(
+            page.locator(".item-text", { hasText: testItemName }),
+        ).toHaveCount(0, slowExpect);
     });
 
-    // Wait a bit for the offline status to be processed
-    await page.waitForTimeout(1000);
+    test("cancels item deletion with confirmation dialog", async ({ page }) => {
+        await page.addInitScript(
+            ({ seededHouseholdId, seededListId }) => {
+                localStorage.clear();
+                localStorage.setItem(
+                    "familytodo:household-id",
+                    seededHouseholdId,
+                );
+                localStorage.setItem(
+                    `familytodo:snapshot:${seededHouseholdId}`,
+                    JSON.stringify({
+                        lists: [
+                            {
+                                id: seededListId,
+                                householdId: seededHouseholdId,
+                                title: "Test Groceries",
+                                sortOrder: 0,
+                                createdAt: "2026-04-17T00:00:00.000Z",
+                                updatedAt: "2026-04-17T00:00:00.000Z",
+                                deletedAt: null,
+                            },
+                        ],
+                        items: [],
+                        serverTs: "2026-04-17T00:00:00.000Z",
+                    }),
+                );
+                // Disable Supabase client to force local item creation
+                localStorage.setItem("familytodo:disable-network", "true");
+            },
+            { seededHouseholdId: householdId, seededListId: listId },
+        );
 
-    // Use a fixed test data name to avoid timestamp issues
-    const testItemName = "Buy milk";
-    await createTestItem(page, testItemName);
+        await page.goto(`/lists/${listId}`);
 
-    // Wait a bit more for the UI to stabilize
-    await page.waitForTimeout(1000);
+        await expect(page.getByTestId("item-hydrated")).toHaveAttribute(
+            "aria-label",
+            "Connected",
+            slowExpect,
+        );
+        await expect(page.getByLabel("New item")).toBeVisible(slowExpect);
+        await expect(
+            page.getByRole("button", { name: "Add item" }),
+        ).toBeEnabled(slowExpect);
 
-    // Verify the item is visible
-    await expect(
-      page.locator(".item-text", { hasText: testItemName }),
-    ).toBeVisible();
+        // Set the app to offline mode to ensure items are created locally
+        await page.evaluate(() => {
+            window.dispatchEvent(new Event("offline"));
+        });
 
-    // Mark the first item as complete
-    const firstCompleteCheckbox = page.getByRole("checkbox").first();
-    await firstCompleteCheckbox.check();
+        // Wait a bit for the offline status to be processed
+        await page.waitForTimeout(1000);
 
-    // Simple verification that at least one checkbox is checked
-    await expect(firstCompleteCheckbox).toBeChecked({ timeout: 5000 });
+        // Use a fixed test data name to avoid timestamp issues
+        const testItemName = "Buy milk";
+        await createTestItem(page, testItemName);
 
-    // Wait for the item to be marked as completed
-    await expect(
-      page.locator(".item-text.completed", { hasText: testItemName }),
-    ).toBeVisible({ timeout: 5000 });
+        // Wait a bit more for the UI to stabilize
+        await page.waitForTimeout(1000);
 
-    // Test item deletion with confirmation
-    page.on("dialog", (dialog) => {
-      expect(dialog.type()).toBe("confirm");
-      expect(dialog.message()).toContain(
-        "Are you sure you want to delete this item?",
-      );
-      dialog.accept(); // Confirm deletion
+        // Verify the item is visible
+        await expect(
+            page.locator(".item-text", { hasText: testItemName }),
+        ).toBeVisible();
+
+        // Test item deletion cancellation
+        page.on("dialog", (dialog) => {
+            expect(dialog.type()).toBe("confirm");
+            expect(dialog.message()).toContain(
+                "Are you sure you want to delete this item?",
+            );
+            dialog.dismiss(); // Cancel deletion
+        });
+
+        await page
+            .getByRole("button", { name: `Delete item ${testItemName}` })
+            .click();
+
+        // Item should still be visible after cancellation
+        await expect(
+            page.locator(".item-text", { hasText: testItemName }),
+        ).toBeVisible(slowExpect);
     });
 
-    await page
-      .getByRole("button", { name: `Delete item ${testItemName}` })
-      .click();
-    await expect(
-      page.locator(".item-text", { hasText: testItemName }),
-    ).toHaveCount(0, slowExpect);
-  });
-
-  test("cancels item deletion with confirmation dialog", async ({ page }) => {
-    await page.addInitScript(
-      ({ seededHouseholdId, seededListId }) => {
-        localStorage.clear();
-        localStorage.setItem("familytodo:household-id", seededHouseholdId);
-        localStorage.setItem(
-          `familytodo:snapshot:${seededHouseholdId}`,
-          JSON.stringify({
-            lists: [
-              {
-                id: seededListId,
-                householdId: seededHouseholdId,
-                title: "Test Groceries",
-                sortOrder: 0,
-                createdAt: "2026-04-17T00:00:00.000Z",
-                updatedAt: "2026-04-17T00:00:00.000Z",
-                deletedAt: null,
-              },
-            ],
-            items: [],
-            serverTs: "2026-04-17T00:00:00.000Z",
-          }),
+    test("renders incomplete-first alphabetical ordering and supports larger toggle target", async ({
+        page,
+    }) => {
+        await page.addInitScript(
+            ({ seededHouseholdId, seededListId }) => {
+                localStorage.clear();
+                localStorage.setItem(
+                    "familytodo:household-id",
+                    seededHouseholdId,
+                );
+                localStorage.setItem(
+                    `familytodo:snapshot:${seededHouseholdId}`,
+                    JSON.stringify({
+                        lists: [
+                            {
+                                id: seededListId,
+                                householdId: seededHouseholdId,
+                                title: "Groceries",
+                                sortOrder: 0,
+                                createdAt: "2026-04-17T00:00:00.000Z",
+                                updatedAt: "2026-04-17T00:00:00.000Z",
+                                deletedAt: null,
+                            },
+                        ],
+                        items: [
+                            {
+                                id: "1",
+                                listId: seededListId,
+                                description: "zebra",
+                                isCompleted: false,
+                                completedAt: null,
+                                createdAt: "2026-04-17T00:00:00.000Z",
+                                updatedAt: "2026-04-17T00:00:00.000Z",
+                                deletedAt: null,
+                            },
+                            {
+                                id: "2",
+                                listId: seededListId,
+                                description: "alpha",
+                                isCompleted: false,
+                                completedAt: null,
+                                createdAt: "2026-04-17T00:00:01.000Z",
+                                updatedAt: "2026-04-17T00:00:01.000Z",
+                                deletedAt: null,
+                            },
+                            {
+                                id: "3",
+                                listId: seededListId,
+                                description: "done item",
+                                isCompleted: true,
+                                completedAt: "2026-04-17T00:00:02.000Z",
+                                createdAt: "2026-04-17T00:00:02.000Z",
+                                updatedAt: "2026-04-17T00:00:02.000Z",
+                                deletedAt: null,
+                            },
+                        ],
+                        serverTs: "2026-04-17T00:00:03.000Z",
+                    }),
+                );
+                // Disable Supabase client to force local item usage
+                localStorage.setItem("familytodo:disable-network", "true");
+            },
+            { seededHouseholdId: householdId, seededListId: listId },
         );
-        // Disable Supabase client to force local item creation
-        localStorage.setItem("familytodo:disable-network", "true");
-      },
-      { seededHouseholdId: householdId, seededListId: listId },
-    );
 
-    await page.goto(`/lists/${listId}`);
+        await page.goto(`/lists/${listId}`);
+        await expect(page.getByTestId("item-hydrated")).toHaveAttribute(
+            "aria-label",
+            "Connected",
+            slowExpect,
+        );
 
-    await expect(page.getByTestId("item-hydrated")).toHaveText(
-      "ready",
-      slowExpect,
-    );
-    await expect(page.getByLabel("New item")).toBeVisible(slowExpect);
-    await expect(page.getByRole("button", { name: "Add item" })).toBeEnabled(
-      slowExpect,
-    );
+        // Wait for items to be visible
+        await expect(page.locator(".item-text")).toHaveCount(3, {
+            timeout: 20000,
+        });
 
-    // Set the app to offline mode to ensure items are created locally
-    await page.evaluate(() => {
-      window.dispatchEvent(new Event("offline"));
+        // Wait a bit more for items to fully render
+        await page.waitForTimeout(2000);
+
+        const names = await page.locator(".item-text").allTextContents();
+        expect(names).toEqual(["alpha", "zebra", "done item"]);
+
+        // Click the toggle label for 'zebra' (first item due to incomplete-first sorting)
+        // The label wraps the checkbox and clicking it should toggle the checkbox
+        const zebraToggle = page.locator(".toggle-hit").first();
+        await zebraToggle.click();
+
+        // Wait for items to reorder (completed items move to end)
+        await page.waitForTimeout(2000);
+
+        // Debug: check what items are visible
+        const namesAfter = await page.locator(".item-text").allTextContents();
+
+        // Check if zebra is completed - it should be moved to the end
+        // If the toggle didn't work, zebra will still be first
+        if (namesAfter[0] === "zebra") {
+            // Toggle didn't work, try clicking the checkbox directly
+            const zebraCheckbox = page
+                .locator('input[type="checkbox"]')
+                .first();
+            await zebraCheckbox.evaluate((el: HTMLInputElement) => el.click());
+            await page.waitForTimeout(2000);
+        }
+
+        // After marking as complete, 'zebra' should now be at the end
+        const finalNames = await page.locator(".item-text").allTextContents();
+        expect(finalNames).toEqual(["alpha", "done item", "zebra"]);
+
+        // Verify the completed class is applied
+        await expect(
+            page.locator(".item-text.completed", { hasText: "zebra" }),
+        ).toBeVisible({ timeout: 10000 });
     });
 
-    // Wait a bit for the offline status to be processed
-    await page.waitForTimeout(1000);
+    test("shows duplicate suggestions and supports reactivate-existing vs create-anyway", async ({
+        page,
+    }) => {
+        await page.addInitScript(
+            ({ seededHouseholdId, seededListId }) => {
+                localStorage.clear();
+                localStorage.setItem(
+                    "familytodo:household-id",
+                    seededHouseholdId,
+                );
+                localStorage.setItem(
+                    `familytodo:snapshot:${seededHouseholdId}`,
+                    JSON.stringify({
+                        lists: [
+                            {
+                                id: seededListId,
+                                householdId: seededHouseholdId,
+                                title: "Groceries",
+                                sortOrder: 0,
+                                createdAt: "2026-04-17T00:00:00.000Z",
+                                updatedAt: "2026-04-17T00:00:00.000Z",
+                                deletedAt: null,
+                            },
+                        ],
+                        items: [
+                            {
+                                id: "1",
+                                listId: seededListId,
+                                description: "Buy milk",
+                                isCompleted: true,
+                                completedAt: "2026-04-17T00:00:30.000Z",
+                                createdAt: "2026-04-17T00:00:00.000Z",
+                                updatedAt: "2026-04-17T00:00:00.000Z",
+                                deletedAt: null,
+                            },
+                        ],
+                        serverTs: "2026-04-17T00:00:00.000Z",
+                    }),
+                );
+                // Disable Supabase client to force local item usage
+                localStorage.setItem("familytodo:disable-network", "true");
+            },
+            { seededHouseholdId: householdId, seededListId: listId },
+        );
 
-    // Use a fixed test data name to avoid timestamp issues
-    const testItemName = "Buy milk";
-    await createTestItem(page, testItemName);
+        await page.goto(`/lists/${listId}`);
+        await expect(page.getByTestId("item-hydrated")).toHaveAttribute(
+            "aria-label",
+            "Connected",
+            slowExpect,
+        );
 
-    // Wait a bit more for the UI to stabilize
-    await page.waitForTimeout(1000);
+        await page.getByLabel("New item").fill("buy milk");
+        // Wait for the UI to process the input and show suggestions
+        await expect(
+            page.getByRole("button", { name: "Use existing item Buy milk" }),
+        ).toBeVisible({ timeout: 20000 });
 
-    // Verify the item is visible
-    await expect(
-      page.locator(".item-text", { hasText: testItemName }),
-    ).toBeVisible();
+        await page
+            .getByRole("button", { name: "Use existing item Buy milk" })
+            .click();
+        await expect(
+            page.getByText("Reactivated existing matching item."),
+        ).toBeVisible(slowExpect);
+        await expect(
+            page.locator(".item-text", { hasText: "Buy milk" }),
+        ).not.toHaveClass(/completed/, slowExpect);
 
-    // Test item deletion cancellation
-    page.on("dialog", (dialog) => {
-      expect(dialog.type()).toBe("confirm");
-      expect(dialog.message()).toContain(
-        "Are you sure you want to delete this item?",
-      );
-      dialog.dismiss(); // Cancel deletion
+        await page.getByLabel("New item").fill("Buy milk extra");
+        await page.getByRole("button", { name: "Add item" }).click();
+        await expect(
+            page.getByRole("button", { name: "Create new anyway" }),
+        ).toBeVisible({ timeout: 20000 });
+        await page.getByRole("button", { name: "Create new anyway" }).click();
+        await expect(
+            page.locator(".item-text", { hasText: "Buy milk extra" }),
+        ).toBeVisible(slowExpect);
     });
 
-    await page
-      .getByRole("button", { name: `Delete item ${testItemName}` })
-      .click();
+    test("keeps new item input visible on mobile with long list", async ({
+        page,
+    }) => {
+        // Set viewport to mobile size
+        await page.setViewportSize({ width: 375, height: 667 });
 
-    // Item should still be visible after cancellation
-    await expect(
-      page.locator(".item-text", { hasText: testItemName }),
-    ).toBeVisible(slowExpect);
-  });
-
-  test("renders incomplete-first alphabetical ordering and supports larger toggle target", async ({
-    page,
-  }) => {
-    await page.addInitScript(
-      ({ seededHouseholdId, seededListId }) => {
-        localStorage.clear();
-        localStorage.setItem("familytodo:household-id", seededHouseholdId);
-        localStorage.setItem(
-          `familytodo:snapshot:${seededHouseholdId}`,
-          JSON.stringify({
-            lists: [
-              {
-                id: seededListId,
-                householdId: seededHouseholdId,
-                title: "Groceries",
-                sortOrder: 0,
-                createdAt: "2026-04-17T00:00:00.000Z",
-                updatedAt: "2026-04-17T00:00:00.000Z",
-                deletedAt: null,
-              },
-            ],
-            items: [
-              {
-                id: "1",
-                listId: seededListId,
-                description: "zebra",
-                isCompleted: false,
-                completedAt: null,
-                createdAt: "2026-04-17T00:00:00.000Z",
-                updatedAt: "2026-04-17T00:00:00.000Z",
-                deletedAt: null,
-              },
-              {
-                id: "2",
-                listId: seededListId,
-                description: "alpha",
-                isCompleted: false,
-                completedAt: null,
-                createdAt: "2026-04-17T00:00:01.000Z",
-                updatedAt: "2026-04-17T00:00:01.000Z",
-                deletedAt: null,
-              },
-              {
-                id: "3",
-                listId: seededListId,
-                description: "done item",
-                isCompleted: true,
-                completedAt: "2026-04-17T00:00:02.000Z",
-                createdAt: "2026-04-17T00:00:02.000Z",
-                updatedAt: "2026-04-17T00:00:02.000Z",
-                deletedAt: null,
-              },
-            ],
-            serverTs: "2026-04-17T00:00:03.000Z",
-          }),
+        await page.addInitScript(
+            ({ seededHouseholdId, seededListId }) => {
+                localStorage.clear();
+                localStorage.setItem(
+                    "familytodo:household-id",
+                    seededHouseholdId,
+                );
+                localStorage.setItem(
+                    `familytodo:snapshot:${seededHouseholdId}`,
+                    JSON.stringify({
+                        lists: [
+                            {
+                                id: seededListId,
+                                householdId: seededHouseholdId,
+                                title: "Long List Test",
+                                sortOrder: 0,
+                                createdAt: "2026-04-17T00:00:00.000Z",
+                                updatedAt: "2026-04-17T00:00:00.000Z",
+                                deletedAt: null,
+                            },
+                        ],
+                        items: Array.from({ length: 50 }, (_, i) => ({
+                            id: `item-${i}`,
+                            listId: seededListId,
+                            description: `Test item ${i + 1}`,
+                            isCompleted: i % 3 === 0, // Every third item is completed
+                            completedAt:
+                                i % 3 === 0 ? "2026-04-17T00:00:30.000Z" : null,
+                            createdAt: "2026-04-17T00:00:00.000Z",
+                            updatedAt: "2026-04-17T00:00:00.000Z",
+                            deletedAt: null,
+                        })),
+                        serverTs: "2026-04-17T00:00:00.000Z",
+                    }),
+                );
+                // Disable Supabase client to force local item usage
+                localStorage.setItem("familytodo:disable-network", "true");
+            },
+            { seededHouseholdId: householdId, seededListId: listId },
         );
-        // Disable Supabase client to force local item usage
-        localStorage.setItem("familytodo:disable-network", "true");
-      },
-      { seededHouseholdId: householdId, seededListId: listId },
-    );
 
-    await page.goto(`/lists/${listId}`);
-    await expect(page.getByTestId("item-hydrated")).toHaveText(
-      "ready",
-      slowExpect,
-    );
-
-    // Wait for items to be visible
-    await expect(page.locator(".item-text")).toHaveCount(3, { timeout: 20000 });
-
-    // Wait a bit more for items to fully render
-    await page.waitForTimeout(2000);
-
-    const names = await page.locator(".item-text").allTextContents();
-    expect(names).toEqual(["alpha", "zebra", "done item"]);
-
-    // Click the toggle label for 'zebra' (first item due to incomplete-first sorting)
-    // The label wraps the checkbox and clicking it should toggle the checkbox
-    const zebraToggle = page.locator(".toggle-hit").first();
-    await zebraToggle.click();
-
-    // Wait for items to reorder (completed items move to end)
-    await page.waitForTimeout(2000);
-
-    // Debug: check what items are visible
-    const namesAfter = await page.locator(".item-text").allTextContents();
-
-    // Check if zebra is completed - it should be moved to the end
-    // If the toggle didn't work, zebra will still be first
-    if (namesAfter[0] === "zebra") {
-      // Toggle didn't work, try clicking the checkbox directly
-      const zebraCheckbox = page.locator('input[type="checkbox"]').first();
-      await zebraCheckbox.evaluate((el: HTMLInputElement) => el.click());
-      await page.waitForTimeout(2000);
-    }
-
-    // After marking as complete, 'zebra' should now be at the end
-    const finalNames = await page.locator(".item-text").allTextContents();
-    expect(finalNames).toEqual(["alpha", "done item", "zebra"]);
-
-    // Verify the completed class is applied
-    await expect(
-      page.locator(".item-text.completed", { hasText: "zebra" }),
-    ).toBeVisible({ timeout: 10000 });
-  });
-
-  test("shows duplicate suggestions and supports reactivate-existing vs create-anyway", async ({
-    page,
-  }) => {
-    await page.addInitScript(
-      ({ seededHouseholdId, seededListId }) => {
-        localStorage.clear();
-        localStorage.setItem("familytodo:household-id", seededHouseholdId);
-        localStorage.setItem(
-          `familytodo:snapshot:${seededHouseholdId}`,
-          JSON.stringify({
-            lists: [
-              {
-                id: seededListId,
-                householdId: seededHouseholdId,
-                title: "Groceries",
-                sortOrder: 0,
-                createdAt: "2026-04-17T00:00:00.000Z",
-                updatedAt: "2026-04-17T00:00:00.000Z",
-                deletedAt: null,
-              },
-            ],
-            items: [
-              {
-                id: "1",
-                listId: seededListId,
-                description: "Buy milk",
-                isCompleted: true,
-                completedAt: "2026-04-17T00:00:30.000Z",
-                createdAt: "2026-04-17T00:00:00.000Z",
-                updatedAt: "2026-04-17T00:00:00.000Z",
-                deletedAt: null,
-              },
-            ],
-            serverTs: "2026-04-17T00:00:00.000Z",
-          }),
+        await page.goto(`/lists/${listId}`);
+        await expect(page.getByTestId("item-hydrated")).toHaveAttribute(
+            "aria-label",
+            "Connected",
+            slowExpect,
         );
-        // Disable Supabase client to force local item usage
-        localStorage.setItem("familytodo:disable-network", "true");
-      },
-      { seededHouseholdId: householdId, seededListId: listId },
-    );
 
-    await page.goto(`/lists/${listId}`);
-    await expect(page.getByTestId("item-hydrated")).toHaveText(
-      "ready",
-      slowExpect,
-    );
+        // Focus the new item input
+        const newItemInput = page.getByLabel("New item");
+        await newItemInput.focus();
 
-    await page.getByLabel("New item").fill("buy milk");
-    // Wait for the UI to process the input and show suggestions
-    await expect(
-      page.getByRole("button", { name: "Use existing item Buy milk" }),
-    ).toBeVisible({ timeout: 20000 });
-
-    await page
-      .getByRole("button", { name: "Use existing item Buy milk" })
-      .click();
-    await expect(
-      page.getByText("Reactivated existing matching item."),
-    ).toBeVisible(slowExpect);
-    await expect(
-      page.locator(".item-text", { hasText: "Buy milk" }),
-    ).not.toHaveClass(/completed/, slowExpect);
-
-    await page.getByLabel("New item").fill("Buy milk extra");
-    await page.getByRole("button", { name: "Add item" }).click();
-    await expect(
-      page.getByRole("button", { name: "Create new anyway" }),
-    ).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "Create new anyway" }).click();
-    await expect(
-      page.locator(".item-text", { hasText: "Buy milk extra" }),
-    ).toBeVisible(slowExpect);
-  });
-
-  test("keeps new item input visible on mobile with long list", async ({
-    page,
-  }) => {
-    // Set viewport to mobile size
-    await page.setViewportSize({ width: 375, height: 667 });
-
-    await page.addInitScript(
-      ({ seededHouseholdId, seededListId }) => {
-        localStorage.clear();
-        localStorage.setItem("familytodo:household-id", seededHouseholdId);
-        localStorage.setItem(
-          `familytodo:snapshot:${seededHouseholdId}`,
-          JSON.stringify({
-            lists: [
-              {
-                id: seededListId,
-                householdId: seededHouseholdId,
-                title: "Long List Test",
-                sortOrder: 0,
-                createdAt: "2026-04-17T00:00:00.000Z",
-                updatedAt: "2026-04-17T00:00:00.000Z",
-                deletedAt: null,
-              },
-            ],
-            items: Array.from({ length: 50 }, (_, i) => ({
-              id: `item-${i}`,
-              listId: seededListId,
-              description: `Test item ${i + 1}`,
-              isCompleted: i % 3 === 0, // Every third item is completed
-              completedAt: i % 3 === 0 ? "2026-04-17T00:00:30.000Z" : null,
-              createdAt: "2026-04-17T00:00:00.000Z",
-              updatedAt: "2026-04-17T00:00:00.000Z",
-              deletedAt: null,
-            })),
-            serverTs: "2026-04-17T00:00:00.000Z",
-          }),
-        );
-        // Disable Supabase client to force local item usage
-        localStorage.setItem("familytodo:disable-network", "true");
-      },
-      { seededHouseholdId: householdId, seededListId: listId },
-    );
-
-    await page.goto(`/lists/${listId}`);
-    await expect(page.getByTestId("item-hydrated")).toHaveText(
-      "ready",
-      slowExpect,
-    );
-
-    // Focus the new item input
-    const newItemInput = page.getByLabel("New item");
-    await newItemInput.focus();
-
-    // Verify the input is still visible (not scrolled out of view)
-    await expect(newItemInput).toBeInViewport({ ratio: 0.5 });
-  });
+        // Verify the input is still visible (not scrolled out of view)
+        await expect(newItemInput).toBeInViewport({ ratio: 0.5 });
+    });
 });
