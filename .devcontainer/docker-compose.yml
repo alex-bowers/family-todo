@@ -6,6 +6,10 @@ networks:
     personalnet:
         external: true
 
+volumes:
+    pnpm_store:
+        external: true
+
 services:
     app:
         build:
@@ -33,6 +37,3 @@ services:
         command: sleep infinity
         extra_hosts:
             - "ollama.local:host-gateway"
-
-volumes:
-    pnpm_store:
