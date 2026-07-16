@@ -17,3 +17,6 @@ WORKDIR /workspaces/family-todo
 
 # Run as the non-root node user provided by the base image
 USER node
+
+# Configure pnpm to use the external volume for the store (container-only)
+RUN pnpm config set store-dir /pnpm-store
