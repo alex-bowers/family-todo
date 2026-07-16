@@ -1,33 +1,36 @@
-version: '3.8'
+version: "3.8"
 
 name: family-todoapp
 
 networks:
-  personalnet:
-    external: true
+    personalnet:
+        external: true
 
 services:
-  app:
-    build:
-      context: ..
-      dockerfile: .devcontainer/Dockerfile
-    volumes:
-      - ..:/workspaces/family-todo:cached
-      - pnpm_store:/pnpm-store
-    environment:
-      - NODE_ENV=development
-    ports:
-      - "5173:5173"
-      - "4173:4173"
-      - "54321:54321"
-      - "54322:54322"
-      - "54323:54323"
-    networks:
-      - personalnet
-    command: sleep infinity
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.todoapp.rule=Host(`todoapp.test`)"
+    app:
+        build:
+            context: ..
+            dockerfile: .devcontainer/Dockerfile
+        volumes:
+            - ..:/workspaces/family-todo:cached
+            - pnpm_store:/pnpm-store
+        environment:
+            - NODE_ENV=development
+        ports:
+            - "5173:5173"
+            - "4173:4173"
+            - "54321:54321"
+            - "54322:54322"
+            - "54323:54323"
+        networks:
+            - personalnet
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.todoapp.rule=Host(`todoapp.apps.test`)"
+            - "traefik.http.routers.todoapp.entrypoints=websecure"
+            - "traefik.http.routers.todoapp.tls=true"
+            - "traefik.http.services.todoapp.loadbalancer.server.port=5173"
+        command: sleep infinity
 
 volumes:
-  pnpm_store:
+    pnpm_store:
