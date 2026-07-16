@@ -41,9 +41,9 @@ describe("mobile-focus", () => {
       },
     } as unknown as Document;
 
-    global.navigator = {
+    vi.stubGlobal("navigator", {
       maxTouchPoints: 0,
-    } as unknown as Navigator;
+    } as unknown as Navigator);
 
     // Create a mock element
     mockElement = document.createElement("input") as HTMLElement;

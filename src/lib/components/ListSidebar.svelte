@@ -51,6 +51,7 @@
 
   <h2 class="heading">Add New List</h2>
   <form on:submit={handleCreate} aria-label="Create list form">
+    <label for="new-list-title">New list</label>
     <input
       id="new-list-title"
       name="new-list-title"
