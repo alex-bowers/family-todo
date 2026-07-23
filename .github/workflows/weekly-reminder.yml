@@ -35,6 +35,8 @@ jobs:
         run: |
           curl -X POST "${{ vars.CF_PAGES_URL }}/api/push/send" \
             -H "Authorization: Bearer ${{ secrets.SEND_SECRET }}" \
+            -H "CF-Access-Client-Id: ${{ secrets.CF_ACCESS_CLIENT_ID }}" \
+            -H "CF-Access-Client-Secret: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}" \
             -H "Content-Type: application/json" \
             -d '{
               "target_timezone": "${{ github.event.inputs.target_timezone || 'Europe/London' }}",

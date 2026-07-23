@@ -125,10 +125,14 @@ self.addEventListener("sync", (event) => {
 });
 
 self.addEventListener("push", (event) => {
+  console.log("[SW] Push event received", event.data ? "with data" : "no data");
+
   let payload: unknown = {};
   try {
     payload = event.data ? event.data.json() : {};
-  } catch {
+    console.log("[SW] Push payload parsed:", payload);
+  } catch (e) {
+    console.error("[SW] Failed to parse push payload:", e);
     payload = {};
   }
 
@@ -146,13 +150,20 @@ self.addEventListener("push", (event) => {
     typeof data.tag === "string" ? data.tag : "familytodo-weekly-reminder";
 
   event.waitUntil(
-    self.registration.showNotification(title, {
-      body,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      tag,
-      requireInteraction: false,
-    }),
+    (async () => {
+      if (Notification.permission !== "granted") {
+        console.warn("[SW] Push received but notification permission not granted");
+        return;
+      }
+      console.log("[SW] Showing notification:", title);
+      await self.registration.showNotification(title, {
+        body,
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        tag,
+        requireInteraction: false,
+      });
+    })(),
   );
 });
 

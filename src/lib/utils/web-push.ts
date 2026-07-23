@@ -86,13 +86,119 @@ async function hkdfExpand(
 }
 
 /**
- * Import a VAPID private key from base64url PKCS#8.
+ * Build a minimal ASN.1 DER length field.
+ */
+function asn1Length(length: number): Uint8Array {
+  if (length < 128) {
+    return new Uint8Array([length]);
+  }
+  const bytes: number[] = [];
+  let temp = length;
+  while (temp > 0) {
+    bytes.unshift(temp & 0xff);
+    temp >>= 8;
+  }
+  return new Uint8Array([0x80 | bytes.length, ...bytes]);
+}
+
+/**
+ * Build an ASN.1 SEQUENCE from raw DER content.
+ */
+function asn1Sequence(content: Uint8Array): Uint8Array {
+  const len = asn1Length(content.length);
+  return concatArrays(new Uint8Array([0x30]), len, content);
+}
+
+/**
+ * Build an ASN.1 OCTET STRING.
+ */
+function asn1OctetString(content: Uint8Array): Uint8Array {
+  const len = asn1Length(content.length);
+  return concatArrays(new Uint8Array([0x04]), len, content);
+}
+
+/**
+ * Build an ASN.1 BIT STRING (used for context tag [1]).
+ */
+function asn1BitString(content: Uint8Array): Uint8Array {
+  const len = asn1Length(content.length + 1);
+  return concatArrays(new Uint8Array([0x03]), len, new Uint8Array([0x00]), content);
+}
+
+/**
+ * Build an ASN.1 INTEGER from a small non-negative number.
+ */
+function asn1Integer(value: number): Uint8Array {
+  return new Uint8Array([0x02, 0x01, value]);
+}
+
+/**
+ * Wrap a raw 32-byte ECDSA P-256 private key into PKCS#8 format.
+ *
+ * Web Crypto requires PKCS#8 import, but VAPID keys are often stored as
+ * raw 32-byte private keys. This function wraps them with the required
+ * ASN.1 structure.
+ */
+function wrapRawEcdsaKeyToPkcs8(rawPrivateKey: Uint8Array): Uint8Array {
+  // Ensure the private key is exactly 32 bytes
+  if (rawPrivateKey.length !== 32) {
+    throw new Error(`Expected 32-byte private key, got ${rawPrivateKey.length}`);
+  }
+
+  // OID ecPublicKey (1.2.840.10045.2.1)
+  const ecPublicKeyOid = new Uint8Array([
+    0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01,
+  ]);
+  // OID prime256v1 (1.2.840.10045.3.1.7)
+  const prime256v1Oid = new Uint8Array([
+    0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07,
+  ]);
+
+  const algorithmIdentifier = asn1Sequence(
+    concatArrays(ecPublicKeyOid, prime256v1Oid),
+  );
+
+  // ECPrivateKey structure (RFC 5915)
+  // version INTEGER { ecPrivkeyVer1(1) }
+  const version = asn1Integer(1);
+  // privateKey OCTET STRING
+  const privateKeyOctet = asn1OctetString(rawPrivateKey);
+
+  const ecPrivateKey = asn1Sequence(
+    concatArrays(version, privateKeyOctet),
+  );
+
+  const privateKeyInfo = asn1Sequence(
+    concatArrays(
+      asn1Integer(0), // version 0
+      algorithmIdentifier,
+      asn1OctetString(ecPrivateKey),
+    ),
+  );
+
+  return privateKeyInfo;
+}
+
+/**
+ * Import a VAPID private key from base64url.
+ *
+ * Handles both raw 32-byte keys and PKCS#8-wrapped keys.
  */
 async function importVapidPrivateKey(privateKeyBase64url: string): Promise<CryptoKey> {
   const privateKeyBytes = base64urlDecode(privateKeyBase64url);
+
+  let pkcs8Bytes: Uint8Array;
+  if (privateKeyBytes.length === 32) {
+    // Raw 32-byte key — wrap it in PKCS#8
+    pkcs8Bytes = wrapRawEcdsaKeyToPkcs8(privateKeyBytes);
+  } else {
+    // Already PKCS#8
+    pkcs8Bytes = privateKeyBytes;
+  }
+
   return crypto.subtle.importKey(
     "pkcs8",
-    privateKeyBytes.buffer,
+    pkcs8Bytes.buffer,
     { name: "ECDSA", namedCurve: "P-256" },
     false,
     ["sign"],
@@ -177,28 +283,35 @@ async function encryptPayload(
   // Generate salt
   const salt = crypto.getRandomValues(new Uint8Array(16));
 
-  // HKDF key derivation
-  // PRK key = HKDF-Extract(salt, sharedSecret)
-  // Content encryption key = HKDF-Expand(PRK key, "Content-Encoding: aes128gcm\x00" + localPublicKey + userAuth, 16)
-  // Nonce = HKDF-Expand(PRK key, "Content-Encoding: nonce\x00" + localPublicKey + userAuth, 12)
+  // RFC 8291 aes128gcm key derivation for Web Push:
+  // 1. Intermediate secret = HKDF(auth_secret, sharedSecret,
+  //    "WebPush: info\x00" || receiver_public || sender_public, 32)
+  // 2. PRK = HKDF-Extract(salt, intermediate_secret)
+  // 3. For aes128gcm, info strings are just "Content-Encoding: <label>\x00"
+  //    (no context appended, unlike aesgcm)
 
-  const contentEncodingAesInfo = concatArrays(
-    new TextEncoder().encode("Content-Encoding: aes128gcm\x00"),
+  const webPushInfo = concatArrays(
+    new TextEncoder().encode("WebPush: info\x00"),
+    userPublicKeyBytes,
     localPublicKey,
-    userAuthBytes,
   );
-  const contentEncodingNonceInfo = concatArrays(
-    new TextEncoder().encode("Content-Encoding: nonce\x00"),
-    localPublicKey,
-    userAuthBytes,
+  const intermediateSecret = await hkdfExpand(
+    await hmacSha256(userAuthBytes, sharedSecret),
+    webPushInfo,
+    32,
   );
 
-  const prkKey = await hmacSha256(salt, sharedSecret);
+  const contentEncodingAesInfo = new TextEncoder().encode("Content-Encoding: aes128gcm\x00");
+  const contentEncodingNonceInfo = new TextEncoder().encode("Content-Encoding: nonce\x00");
+
+  const prkKey = await hmacSha256(salt, intermediateSecret);
   const contentEncryptionKey = await hkdfExpand(prkKey, contentEncodingAesInfo, 16);
   const nonce = await hkdfExpand(prkKey, contentEncodingNonceInfo, 12);
 
-  // Encrypt payload with AES-GCM
+  // Encrypt payload with AES-GCM; append 0x02 padding delimiter (last record per RFC 8188)
   const payloadBytes = new TextEncoder().encode(payload);
+  const plaintext = concatArrays(payloadBytes, new Uint8Array([0x02]));
+
   const cryptoKey = await crypto.subtle.importKey(
     "raw",
     contentEncryptionKey,
@@ -208,7 +321,7 @@ async function encryptPayload(
   );
 
   const ciphertext = new Uint8Array(
-    await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, cryptoKey, payloadBytes),
+    await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, cryptoKey, plaintext),
   );
 
   return { ciphertext, salt, localPublicKey };

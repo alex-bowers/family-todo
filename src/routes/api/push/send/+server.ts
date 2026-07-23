@@ -1,19 +1,6 @@
-/**
- * Cloudflare Pages Function: POST /api/push/send
- *
- * Sends weekly push reminders to all active subscriptions.
- * Triggered by GitHub Actions cron workflow.
- */
-
-import { sendPushMessage } from "../../../src/lib/utils/web-push";
-
-interface Env {
-  VAPID_PRIVATE_KEY: string;
-  VAPID_PUBLIC_KEY: string;
-  SUPABASE_SERVICE_ROLE_KEY: string;
-  SUPABASE_URL: string;
-  SEND_SECRET: string;
-}
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import { sendPushMessage } from '$lib/utils/web-push';
 
 interface PushSubscription {
   id: string;
@@ -33,6 +20,7 @@ interface SendRequestBody {
   tag?: string;
   icon?: string;
   badge?: string;
+  force?: boolean;
 }
 
 interface SendResponse {
@@ -44,17 +32,17 @@ interface SendResponse {
 
 const DEFAULT_TARGET = {
   timezone: "Europe/London",
-  day: 0, // Sunday
+  day: 0,
   hour: 18,
   minute: 5,
 };
 
 const VAPID_SUBJECT = "mailto:admin@familytodo.app";
 
-/**
- * Check if the current UTC time falls within the target window
- * (±5 minutes of the scheduled time in the target timezone).
- */
+const WEEKDAY_MAP: Record<string, number> = {
+  Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+};
+
 function isWithinTargetWindow(
   now: Date,
   targetTimezone: string,
@@ -62,30 +50,34 @@ function isWithinTargetWindow(
   targetHour: number,
   targetMinute: number,
 ): boolean {
-  // Use numeric weekday formatter for unambiguous day-of-week detection
-  const numericFormatter = new Intl.DateTimeFormat("en-GB", {
+  const timeFormatter = new Intl.DateTimeFormat("en-GB", {
     timeZone: targetTimezone,
-    weekday: "numeric",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
   });
 
-  const numericParts = numericFormatter.formatToParts(now);
-  const currentDay = parseInt(
-    numericParts.find((p) => p.type === "weekday")?.value ?? "0",
-    10,
-  );
+  const dayFormatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: targetTimezone,
+    weekday: "short",
+  });
+
+  const timeParts = timeFormatter.formatToParts(now);
   const currentHour = parseInt(
-    numericParts.find((p) => p.type === "hour")?.value ?? "0",
+    timeParts.find((p) => p.type === "hour")?.value ?? "0",
     10,
   );
   const currentMinute = parseInt(
-    numericParts.find((p) => p.type === "minute")?.value ?? "0",
+    timeParts.find((p) => p.type === "minute")?.value ?? "0",
     10,
   );
 
-  // Check if we're on the right day and within ±5 minutes of target time
+  const dayStr = dayFormatter.format(now).trim();
+  const currentDay = WEEKDAY_MAP[dayStr];
+  if (currentDay === undefined) {
+    return false;
+  }
+
   if (currentDay !== targetDay) {
     return false;
   }
@@ -97,9 +89,6 @@ function isWithinTargetWindow(
   return diffMinutes <= 5;
 }
 
-/**
- * Fetch all push subscriptions from Supabase.
- */
 async function fetchSubscriptions(
   supabaseUrl: string,
   serviceRoleKey: string,
@@ -122,9 +111,6 @@ async function fetchSubscriptions(
   return (await response.json()) as PushSubscription[];
 }
 
-/**
- * Delete a subscription from Supabase by ID.
- */
 async function deleteSubscription(
   supabaseUrl: string,
   serviceRoleKey: string,
@@ -147,21 +133,20 @@ async function deleteSubscription(
   }
 }
 
-export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+export const POST: RequestHandler = async ({ request, platform }) => {
+  const env = platform?.env as Record<string, string> | undefined;
 
-  // Validate authorization
+  if (!env) {
+    return json({ error: "Environment not available" }, { status: 500 });
+  }
+
   const authHeader = request.headers.get("Authorization");
   const expectedToken = `Bearer ${env.SEND_SECRET}`;
   if (!authHeader || authHeader !== expectedToken) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    // Parse request body
     const body: SendRequestBody = await request.json().catch(() => ({}));
 
     const targetTimezone = body.target_timezone ?? DEFAULT_TARGET.timezone;
@@ -169,15 +154,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const targetHour = body.target_hour ?? DEFAULT_TARGET.hour;
     const targetMinute = body.target_minute ?? DEFAULT_TARGET.minute;
 
-    // Check if we're within the target window
     const now = new Date();
-    const shouldSend = isWithinTargetWindow(
-      now,
-      targetTimezone,
-      targetDay,
-      targetHour,
-      targetMinute,
-    );
+    const shouldSend =
+      body.force === true ||
+      isWithinTargetWindow(
+        now,
+        targetTimezone,
+        targetDay,
+        targetHour,
+        targetMinute,
+      );
 
     if (!shouldSend) {
       const response: SendResponse = {
@@ -186,16 +172,22 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         cleaned_up: 0,
         skipped: true,
       };
-      return new Response(JSON.stringify(response), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return json(response);
     }
 
-    // Fetch subscriptions
+    const supabaseUrl = env.PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      return json(
+        { error: "Missing Supabase configuration" },
+        { status: 500 },
+      );
+    }
+
     const subscriptions = await fetchSubscriptions(
-      env.SUPABASE_URL,
-      env.SUPABASE_SERVICE_ROLE_KEY,
+      supabaseUrl,
+      serviceRoleKey,
     );
 
     const title = body.title ?? "FamilyToDo";
@@ -209,7 +201,6 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     let failed = 0;
     let cleanedUp = 0;
 
-    // Send to each subscription
     for (const sub of subscriptions) {
       try {
         const result = await sendPushMessage({
@@ -217,7 +208,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           p256dh: sub.p256dh,
           auth: sub.auth,
           vapidPrivateKey: env.VAPID_PRIVATE_KEY,
-          vapidPublicKey: env.VAPID_PUBLIC_KEY,
+          vapidPublicKey: env.PUBLIC_VAPID_PUBLIC_KEY,
           vapidSubject: VAPID_SUBJECT,
           title,
           body: messageBody,
@@ -230,12 +221,15 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
           sent++;
         } else if (result.permanentFailure) {
           await deleteSubscription(
-            env.SUPABASE_URL,
-            env.SUPABASE_SERVICE_ROLE_KEY,
+            supabaseUrl,
+            serviceRoleKey,
             sub.id,
           );
           cleanedUp++;
         } else {
+          console.error(
+            `Push failed: ${result.status} ${result.statusText} for ${sub.endpoint}`,
+          );
           failed++;
         }
       } catch (error) {
@@ -251,19 +245,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       skipped: false,
     };
 
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json(response);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Push send error:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error", message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    return json({ error: message }, { status: 500 });
   }
 };
