@@ -7,7 +7,12 @@
     setWeeklyNotificationEnabled,
     scheduleWeeklyNotification,
     cancelWeeklyNotification,
+    subscribeToPushNotifications,
+    unsubscribeFromPushNotifications,
+    isPushNotificationEnabled,
+    setPushNotificationEnabled,
   } from '$lib/utils/notifications';
+  import { resolveHouseholdId } from '$lib/memory/household';
 
   let permission: NotificationPermission = 'default';
   let enabled = false;
@@ -20,13 +25,20 @@
       if (result === 'granted') {
         enabled = true;
         setWeeklyNotificationEnabled(true);
+        setPushNotificationEnabled(true);
         cancelNotification = scheduleWeeklyNotification();
+        // Subscribe to push notifications for closed-app delivery
+        const householdId = resolveHouseholdId();
+        await subscribeToPushNotifications(householdId);
       }
     } else {
       enabled = false;
       setWeeklyNotificationEnabled(false);
+      setPushNotificationEnabled(false);
       cancelWeeklyNotification();
       cancelNotification = null;
+      // Unsubscribe from push notifications
+      await unsubscribeFromPushNotifications();
     }
   }
 

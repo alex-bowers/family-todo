@@ -1,6 +1,6 @@
 # family-todo Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-07-15
+Auto-generated from all feature plans. Last updated: 2026-07-23
 
 ## Active Technologies
 - TypeScript on Node.js 20.x (SvelteKit current LTS support) + SvelteKit 2.x, Vite, Supabase JS client, Vitest, Playwright, pnpm 11.8.0 (005-docker-devcontainer)
@@ -30,11 +30,11 @@ pnpm test && pnpm run lint
 TypeScript on Node.js 20.x (SvelteKit current LTS support): Follow standard conventions
 
 ## Recent Changes
+- 006-push-weekly-reminders: Added TypeScript on Node.js 20.x (SvelteKit current LTS support)
 - 005-docker-devcontainer: Added TypeScript on Node.js 20.x (SvelteKit current LTS support) + SvelteKit 2.x, Vite, Supabase JS client, Vitest, Playwright, pnpm 11.8.0
 
 - 004-start-specification: Added TypeScript/JavaScript on Node.js 20.x with SvelteKit 2.x + SvelteKit, Vite, Supabase JS client, Vitest, Playwright (existing only)
 
-- 002-migrate-to-supabase: Added TypeScript on Node.js 20.x (frontend stack unchanged) + SvelteKit, Vite, Supabase JS client, Vitest, Playwrigh
 
 
 <!-- MANUAL ADDITIONS START -->

@@ -329,7 +329,7 @@ describe("scheduleWeeklyNotification", () => {
 
     const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
 
-    const cleanup1 = scheduleWeeklyNotification();
+    scheduleWeeklyNotification();
     // Calling again should cancel the first timeout before scheduling a new one
     const cleanup2 = scheduleWeeklyNotification();
 
