@@ -125,14 +125,10 @@ self.addEventListener("sync", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  console.log("[SW] Push event received", event.data ? "with data" : "no data");
-
   let payload: unknown = {};
   try {
     payload = event.data ? event.data.json() : {};
-    console.log("[SW] Push payload parsed:", payload);
-  } catch (e) {
-    console.error("[SW] Failed to parse push payload:", e);
+  } catch {
     payload = {};
   }
 
@@ -152,10 +148,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     (async () => {
       if (Notification.permission !== "granted") {
-        console.warn("[SW] Push received but notification permission not granted");
         return;
       }
-      console.log("[SW] Showing notification:", title);
       await self.registration.showNotification(title, {
         body,
         icon: "/icons/icon-192.png",

@@ -118,14 +118,6 @@ function asn1OctetString(content: Uint8Array): Uint8Array {
 }
 
 /**
- * Build an ASN.1 BIT STRING (used for context tag [1]).
- */
-function asn1BitString(content: Uint8Array): Uint8Array {
-  const len = asn1Length(content.length + 1);
-  return concatArrays(new Uint8Array([0x03]), len, new Uint8Array([0x00]), content);
-}
-
-/**
  * Build an ASN.1 INTEGER from a small non-negative number.
  */
 function asn1Integer(value: number): Uint8Array {
