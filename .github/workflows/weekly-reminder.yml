@@ -1,0 +1,44 @@
+name: Weekly Reminder
+
+on:
+  schedule:
+    # Run every hour to check if we're within the target window
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      target_timezone:
+        description: "Target timezone (IANA)"
+        required: false
+        default: "Europe/London"
+      target_day:
+        description: "Target day of week (0=Sunday)"
+        required: false
+        default: "0"
+      target_hour:
+        description: "Target hour (24h)"
+        required: false
+        default: "18"
+      target_minute:
+        description: "Target minute"
+        required: false
+        default: "5"
+
+concurrency:
+  group: weekly-reminder
+  cancel-in-progress: false
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send weekly push reminders
+        run: |
+          curl -X POST "${{ vars.CF_PAGES_URL }}/api/push/send" \
+            -H "Authorization: Bearer ${{ secrets.SEND_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "target_timezone": "${{ github.event.inputs.target_timezone || 'Europe/London' }}",
+              "target_day": ${{ github.event.inputs.target_day || 0 }},
+              "target_hour": ${{ github.event.inputs.target_hour || 18 }},
+              "target_minute": ${{ github.event.inputs.target_minute || 5 }}
+            }'
