@@ -8,6 +8,7 @@ import {
   GET_CHANGES_SINCE,
   GET_ITEMS_BY_LIST,
   GET_LISTS,
+  REVERT_ITEM,
   SET_ITEM_COMPLETION,
   UPDATE_ITEM_TEXT,
 } from "$lib/graphql/operations";
@@ -24,6 +25,10 @@ function asNumber(value: unknown, fallback = 0): number {
 
 function asBoolean(value: unknown, fallback = false): boolean {
   return typeof value === "boolean" ? value : fallback;
+}
+
+function asNullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
 }
 
 export class SupabaseDataClient {
@@ -60,6 +65,8 @@ export class SupabaseDataClient {
         return this.setItemCompletion(variables) as Promise<TData>;
       case DELETE_ITEM:
         return this.deleteItem(variables) as Promise<TData>;
+      case REVERT_ITEM:
+        return this.revertItem(variables) as Promise<TData>;
       case GET_CHANGES_SINCE:
         return this.getChangesSince(variables) as Promise<TData>;
       default:
@@ -213,7 +220,38 @@ export class SupabaseDataClient {
       query = query.eq("updated_at", expectedUpdatedAt);
     }
 
-    const { data, error } = await query.select("id, deleted_at").maybeSingle();
+    const { data, error } = await query
+      .select("id, deleted_at, updated_at")
+      .maybeSingle();
+    if (error) throw new Error(`Supabase request failed: ${error.message}`);
+    return { update_todo_items_by_pk: data ?? null };
+  }
+
+  private async revertItem(variables: RequestVariables): Promise<unknown> {
+    const itemId = asString(variables.itemId);
+    const expectedUpdatedAt = asString(variables.expectedUpdatedAt);
+
+    // Undo must never overwrite a change made since the original action.
+    if (!expectedUpdatedAt) {
+      throw new Error(
+        "Data request failed: expectedUpdatedAt is required to revert an item",
+      );
+    }
+
+    const { data, error } = await this.client!.from("todo_items")
+      .update({
+        description: asString(variables.description),
+        is_completed: asBoolean(variables.isCompleted),
+        completed_at: asNullableString(variables.completedAt),
+        deleted_at: asNullableString(variables.deletedAt),
+      })
+      .eq("id", itemId)
+      .eq("updated_at", expectedUpdatedAt)
+      .select(
+        "id, household_id, list_id, description, is_completed, completed_at, created_at, updated_at, deleted_at",
+      )
+      .maybeSingle();
+
     if (error) throw new Error(`Supabase request failed: ${error.message}`);
     return { update_todo_items_by_pk: data ?? null };
   }

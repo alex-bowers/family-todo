@@ -1,4 +1,10 @@
-import type { PendingMutation, SyncCursor, SyncSnapshot, UUID } from "./types";
+import type {
+  ItemUndoRecord,
+  PendingMutation,
+  SyncCursor,
+  SyncSnapshot,
+  UUID,
+} from "./types";
 
 const CACHE_PREFIX = "familytodo";
 
@@ -56,6 +62,22 @@ export const cacheStore = {
     writeJson(`queue:${householdId}`, queue);
   },
 
+  readItemUndo(householdId: UUID): unknown {
+    return readJson<unknown>(`undo:${householdId}`, null);
+  },
+
+  writeItemUndo(householdId: UUID, record: ItemUndoRecord): void {
+    writeJson(`undo:${householdId}`, record);
+  },
+
+  clearItemUndo(householdId: UUID): void {
+    if (typeof localStorage === "undefined") {
+      return;
+    }
+
+    localStorage.removeItem(key(`undo:${householdId}`));
+  },
+
   clearHousehold(householdId: UUID): void {
     if (typeof localStorage === "undefined") {
       return;
@@ -64,5 +86,6 @@ export const cacheStore = {
     localStorage.removeItem(key(`snapshot:${householdId}`));
     localStorage.removeItem(key(`cursor:${householdId}`));
     localStorage.removeItem(key(`queue:${householdId}`));
+    localStorage.removeItem(key(`undo:${householdId}`));
   },
 };

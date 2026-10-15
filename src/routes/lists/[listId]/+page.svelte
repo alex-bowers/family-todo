@@ -7,6 +7,7 @@
   import { resolveHouseholdId } from '$lib/memory/household';
   import { ItemRepository } from '$lib/memory/item-repository';
   import { ItemStore } from '$lib/stores/item-store';
+  import { createItemUndoStorage, describeItemUndo } from '$lib/stores/item-undo';
   import { ListRepository } from '$lib/memory/list-repository';
   import { OfflineQueue } from '$lib/sync/offline-queue';
   import { startRealtimeBridge } from '$lib/sync/realtime';
@@ -16,12 +17,13 @@
 
   const itemRepository = new ItemRepository(householdId);
   const listRepository = new ListRepository();
-  const store = new ItemStore(listId, itemRepository);
+  const store = new ItemStore(listId, itemRepository, createItemUndoStorage(householdId));
   const queue = new OfflineQueue(householdId);
   const itemState = store;
   let listTitle = '';
   let hydrated = false;
   let syncStatus = 'online synced';
+  let online = true;
   let stopRealtime = () => {};
 
   async function sendQueuedMutation(mutation) {
@@ -98,6 +100,10 @@
     }
   }
 
+  async function handleUndo() {
+    await store.undo();
+  }
+
   async function loadListTitle() {
     try {
       const lists = await listRepository.getLists(householdId);
@@ -129,15 +135,18 @@
   onMount(async () => {
     await loadListTitle();
     hydrated = true;
+    online = navigator.onLine;
     syncStatus = navigator.onLine ? 'online synced' : 'offline queued';
     await store.load();
 
     stopRealtime = startRealtimeBridge({
       onReconnect: async () => {
+        online = true;
         await flushQueue();
         await store.load();
       },
       onOffline: async () => {
+        online = false;
         syncStatus = 'offline queued';
       },
       onPoll: async () => {
@@ -165,7 +174,19 @@
 
 <main>
   <div class="actions">
-    <a href="/" class="button primary">Back to lists</a>
+    <div class="action-group">
+      <a href="/" class="button primary">Back to lists</a>
+      <button
+        type="button"
+        class="button secondary"
+        on:click={handleUndo}
+        disabled={!$itemState.undo || !online}
+        aria-label={$itemState.undo ? `Undo: ${describeItemUndo($itemState.undo)}` : 'Undo'}
+        data-testid="undo-button"
+      >
+        Undo
+      </button>
+    </div>
     <button
       type="button"
       class="button danger"
@@ -176,6 +197,7 @@
       Delete List
     </button>
   </div>
+  <p class="undo-status" role="status" data-testid="undo-status">{$itemState.undoMessage ?? ''}</p>
   <div class="header">
     <h1>{listTitle || 'List Details'}</h1>
     <div
@@ -208,7 +230,19 @@
 
   .actions {
     display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     justify-content: space-between;
+  }
+
+  .action-group {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .undo-status {
+    margin: 0;
+    min-height: 1.5em;
   }
 
   .header {
@@ -248,6 +282,20 @@
 
   .button.primary:hover {
     background-color: #2563eb;
+  }
+
+  .button.secondary {
+    background-color: #e5e7eb;
+    color: #111827;
+  }
+
+  .button.secondary:hover:not(:disabled) {
+    background-color: #d1d5db;
+  }
+
+  .button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   .button.danger {

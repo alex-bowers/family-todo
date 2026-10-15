@@ -17,6 +17,7 @@ describe("ItemStore transitions", () => {
       updateItemText: vi.fn(),
       setItemCompletion: vi.fn(),
       deleteItem: vi.fn(),
+      revertItem: vi.fn(),
     };
 
     const store = new ItemStore(FIXTURE_LIST_ID, repository);
@@ -38,6 +39,7 @@ describe("ItemStore transitions", () => {
       updateItemText: vi.fn(),
       setItemCompletion: vi.fn(),
       deleteItem: vi.fn(),
+      revertItem: vi.fn(),
     };
 
     const store = new ItemStore(FIXTURE_LIST_ID, repository);
@@ -58,6 +60,7 @@ describe("ItemStore transitions", () => {
       ),
       setItemCompletion: vi.fn(),
       deleteItem: vi.fn(),
+      revertItem: vi.fn(),
     };
 
     const store = new ItemStore(FIXTURE_LIST_ID, repository);
@@ -80,7 +83,8 @@ describe("ItemStore transitions", () => {
       createItem: vi.fn(),
       updateItemText: vi.fn(),
       setItemCompletion: vi.fn(async () => completed),
-      deleteItem: vi.fn(async () => undefined),
+      deleteItem: vi.fn(async () => null),
+      revertItem: vi.fn(),
     };
 
     const store = new ItemStore(FIXTURE_LIST_ID, repository);

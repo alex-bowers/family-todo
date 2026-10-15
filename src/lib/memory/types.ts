@@ -27,6 +27,33 @@ export interface TodoItem {
   deletedAt: string | null;
 }
 
+export type ItemUndoAction =
+  | "create"
+  | "edit"
+  | "complete"
+  | "uncomplete"
+  | "delete";
+
+export interface ItemRevertFields {
+  description: string;
+  isCompleted: boolean;
+  completedAt: string | null;
+  deletedAt: string | null;
+}
+
+export interface ItemUndoRecord {
+  action: ItemUndoAction;
+  listId: UUID;
+  itemId: UUID;
+  /** Item text straight after the action, used to describe the undo. */
+  label: string;
+  /** Field values the item returns to when the action is undone. */
+  revertTo: ItemRevertFields;
+  /** The item's updatedAt straight after the action; undo is refused once it moves on. */
+  expectedUpdatedAt: string;
+  recordedAt: string;
+}
+
 export interface SyncCursor {
   deviceId: string;
   householdId: UUID;

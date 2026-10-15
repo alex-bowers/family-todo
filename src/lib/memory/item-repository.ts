@@ -3,6 +3,7 @@ import {
     CREATE_ITEM,
     DELETE_ITEM,
     GET_ITEMS_BY_LIST,
+    REVERT_ITEM,
     SET_ITEM_COMPLETION,
     UPDATE_ITEM_TEXT,
 } from "$lib/graphql/operations";
@@ -10,6 +11,7 @@ import { cacheStore } from "$lib/memory/cache";
 import { generateUUID } from "$lib/utils/uuid";
 import {
     fromSupabaseItem,
+    type ItemRevertFields,
     type SupabaseItemRow,
     type TodoItem,
     type UUID,
@@ -32,6 +34,7 @@ interface DeleteItemResponse {
     update_todo_items_by_pk: {
         id: string;
         deleted_at: string | null;
+        updated_at: string;
     } | null;
 }
 
@@ -56,6 +59,15 @@ export class ItemRepository {
             items,
             serverTs: new Date().toISOString(),
         });
+    }
+
+    private writeItem(existing: TodoItem[], next: TodoItem): void {
+        const found = existing.some((item) => item.id === next.id);
+        this.writeLocal(
+            found
+                ? existing.map((item) => (item.id === next.id ? next : item))
+                : [...existing, next],
+        );
     }
 
     async getItems(listId: UUID): Promise<TodoItem[]> {
@@ -212,29 +224,72 @@ export class ItemRepository {
         return next;
     }
 
-    async deleteItem(itemId: UUID): Promise<void> {
+    async deleteItem(itemId: UUID): Promise<TodoItem | null> {
+        const existing = this.readLocal();
+        const now = new Date().toISOString();
+        let updatedAt: string | null = now;
+
+        if (this.client) {
+            const result = await this.client.request<DeleteItemResponse>(
+                DELETE_ITEM,
+                {
+                    itemId,
+                    deletedAt: now,
+                    expectedUpdatedAt: existing.find(
+                        (item) => item.id === itemId,
+                    )?.updatedAt,
+                },
+            );
+            // Null when the server row was missing or changed elsewhere.
+            updatedAt = result.update_todo_items_by_pk?.updated_at ?? null;
+        }
+
+        const current = existing.find((item) => item.id === itemId);
+        const deleted: TodoItem | null = current
+            ? { ...current, deletedAt: now, updatedAt: updatedAt ?? now }
+            : null;
+
+        this.writeLocal(
+            existing.map((item) =>
+                item.id === itemId && deleted ? deleted : item,
+            ),
+        );
+        return updatedAt ? deleted : null;
+    }
+
+    async revertItem(
+        itemId: UUID,
+        fields: ItemRevertFields,
+        expectedUpdatedAt: string,
+    ): Promise<TodoItem | null> {
         const existing = this.readLocal();
 
         if (this.client) {
-            await this.client.request<DeleteItemResponse>(DELETE_ITEM, {
-                itemId,
-                deletedAt: new Date().toISOString(),
-                expectedUpdatedAt: existing.find((item) => item.id === itemId)
-                    ?.updatedAt,
-            });
+            const result = await this.client.request<UpdateItemResponse>(
+                REVERT_ITEM,
+                { itemId, ...fields, expectedUpdatedAt },
+            );
+
+            if (!result.update_todo_items_by_pk) {
+                return null;
+            }
+
+            const reverted = fromSupabaseItem(result.update_todo_items_by_pk);
+            this.writeItem(existing, reverted);
+            return reverted;
         }
 
-        const now = new Date().toISOString();
-        const updated = existing.map((item) =>
-            item.id === itemId
-                ? {
-                      ...item,
-                      deletedAt: now,
-                      updatedAt: now,
-                  }
-                : item,
-        );
+        const current = existing.find((item) => item.id === itemId);
+        if (!current || current.updatedAt !== expectedUpdatedAt) {
+            return null;
+        }
 
-        this.writeLocal(updated);
+        const reverted: TodoItem = {
+            ...current,
+            ...fields,
+            updatedAt: new Date().toISOString(),
+        };
+        this.writeItem(existing, reverted);
+        return reverted;
     }
 }

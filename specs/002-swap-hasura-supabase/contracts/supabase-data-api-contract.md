@@ -102,6 +102,21 @@ Defines required data access and synchronization behavior after replacing Hasura
 - Rules:
   - Apply soft delete marker via conditional update.
   - Return conflict metadata when precondition fails.
+  - Return the row's new `updated_at` so the client can offer an undo.
+
+### RevertItem
+
+- Inputs:
+  - itemId: UUID
+  - description: string
+  - isCompleted: boolean
+  - completedAt: timestamptz | null
+  - deletedAt: timestamptz | null
+  - expectedUpdatedAt: timestamptz (required)
+- Rules:
+  - Used by "undo last action" to restore an item's previous field values.
+  - Apply only when `updated_at` still equals expectedUpdatedAt; otherwise return no row, so a change made on another device is never overwritten.
+  - Setting deletedAt to null restores a soft-deleted item; setting it to a timestamp removes an added item.
 
 ## Realtime and Sync Contract
 

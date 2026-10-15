@@ -7,3 +7,4 @@ export const UPDATE_ITEM_TEXT = "UpdateItemText";
 export const SET_ITEM_COMPLETION = "SetItemCompletion";
 export const DELETE_ITEM = "DeleteItem";
 export const GET_CHANGES_SINCE = "GetChangesSince";
+export const REVERT_ITEM = "RevertItem";
