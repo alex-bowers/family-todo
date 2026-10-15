@@ -62,11 +62,17 @@ In your GitHub repository settings, add:
 supabase migration up
 ```
 
-Or apply the migration directly:
+Or apply the migrations directly:
 
 ```bash
 psql $SUPABASE_DB_URL -f supabase/migrations/003_push_subscriptions.sql
 ```
+
+```bash
+psql $SUPABASE_DB_URL -f supabase/migrations/004_push_last_sent.sql
+```
+
+Migration 004 adds `last_sent_at`, which the send endpoint uses to send each device one reminder per Sunday.
 
 ### 2. Start the Development Server
 
@@ -85,13 +91,13 @@ pnpm dev
 
 ### 4. Test Push Send (Manual)
 
-Trigger the send endpoint locally using curl:
+Outside the Sunday 13:00–20:00 UK window, the endpoint skips sending. To send immediately, pass `force`. This sends to every subscribed device:
 
 ```bash
 curl -X POST http://localhost:8788/api/push/send \
   -H "Authorization: Bearer $SEND_SECRET" \
   -H "Content-Type: application/json" \
-  -d '{"target_timezone":"Europe/London","target_day":0,"target_hour":18,"target_minute":5}'
+  -d '{"force":true}'
 ```
 
 **Note**: Local push delivery requires the browser to be connected to a push service (e.g., FCM for Chrome, APNs for Safari). In development, you may need to use a tool like `web-push` CLI or Postman to send a test push message directly to the endpoint.
@@ -121,21 +127,28 @@ pnpm test:e2e
 
 ## Deployment
 
-### 1. Deploy to Cloudflare Pages
+### 1. Apply the Database Migration
+
+Apply `supabase/migrations/004_push_last_sent.sql` to production before deploying. Without it, the send endpoint returns `500` and sends nothing.
+
+### 2. Deploy to Cloudflare Pages
 
 ```bash
 pnpm run deploy:prod
 ```
 
-### 2. Verify GitHub Actions Workflow
+### 3. Verify GitHub Actions Workflow
 
-Check the Actions tab in GitHub to confirm the `weekly-reminder.yml` workflow is scheduled and running.
+The `weekly-reminder.yml` workflow runs every 30 minutes on Sundays between 12:00 and 19:59 UTC. The endpoint sends each device one reminder between 13:00 and 20:00 UK time.
 
-### 3. Monitor
+To send a test reminder, run the workflow from the Actions tab with **force** ticked. This sends to every subscribed device straight away.
+
+### 4. Monitor
 
 - Check Cloudflare Pages Function logs for send errors.
 - Monitor the `push_subscriptions` table for accumulation of expired records.
-- Verify notifications arrive within 60 seconds of the target time.
+- Verify notifications arrive between 13:00 and 20:00 UK time on Sunday.
+- A failed workflow run means the endpoint returned an error. The run log includes the response body.
 
 ## Troubleshooting
 
@@ -145,4 +158,5 @@ Check the Actions tab in GitHub to confirm the `weekly-reminder.yml` workflow is
 | "Unauthorized" on send endpoint | `SEND_SECRET` mismatch | Verify secrets in Cloudflare and GitHub match |
 | Notification not arriving when app is closed | Service worker not registered | Check DevTools → Application → Service Workers |
 | Duplicate notifications | Multiple subscriptions for same device | Ensure `unsubscribe` is called before `subscribe` |
+| Send endpoint returns `500` with `Failed to fetch subscriptions: 400 Bad Request` | Migration 004 not applied, so the `last_sent_at` column is missing | Apply `supabase/migrations/004_push_last_sent.sql` |
 | Orphaned subscriptions accumulating | Expired endpoints not cleaned up | Verify the send endpoint deletes 410 Gone responses |

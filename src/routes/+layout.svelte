@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { dev } from '$app/environment';
 	import PwaInstallPrompt from '$lib/components/PwaInstallPrompt.svelte';
-	import { scheduleWeeklyNotification } from '$lib/utils/notifications';
 
 	onMount(() => {
 		if (!('serviceWorker' in navigator)) {
@@ -27,8 +26,6 @@
 		}
 
 		void navigator.serviceWorker.register('/service-worker.js');
-		const cancelNotification = scheduleWeeklyNotification();
-		return cancelNotification;
 	});
 </script>
 

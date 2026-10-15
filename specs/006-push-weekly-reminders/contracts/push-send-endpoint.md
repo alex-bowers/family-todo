@@ -17,10 +17,7 @@
 
 ```json
 {
-  "target_timezone": "Europe/London",
-  "target_day": 0,
-  "target_hour": 18,
-  "target_minute": 5,
+  "force": false,
   "title": "FamilyToDo",
   "body": "Has everything been added to the shopping list?",
   "tag": "familytodo-weekly-reminder",
@@ -31,10 +28,7 @@
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `target_timezone` | `string` | No | `"Europe/London"` | IANA timezone for scheduling |
-| `target_day` | `number` | No | `0` | Day of week (0=Sunday) |
-| `target_hour` | `number` | No | `18` | Hour in 24h format |
-| `target_minute` | `number` | No | `5` | Minute |
+| `force` | `boolean` | No | `false` | Send to every device now, ignoring the window and previous sends. For testing. |
 | `title` | `string` | No | `"FamilyToDo"` | Notification title |
 | `body` | `string` | No | `"Has everything been added to the shopping list?"` | Notification body |
 | `tag` | `string` | No | `"familytodo-weekly-reminder"` | Notification tag for deduplication |
@@ -43,7 +37,15 @@
 
 ### Scheduling Behavior
 
-The endpoint checks whether the current UTC time falls within the target window (±5 minutes of the scheduled time in the target timezone). If not, it returns `200 OK` with `sent: 0` and takes no action. This allows the cron to run frequently (e.g., hourly) without sending outside the target window.
+The reminder window is Sundays, 13:00 to 20:00 UK time (`Europe/London`), in both GMT and BST. The window is fixed in `src/lib/utils/reminder-window.ts`.
+
+- Outside the window, the endpoint returns `200 OK` with `skipped: true` and does not query Supabase.
+- Inside the window, it sends only to subscriptions whose `last_sent_at` is empty or earlier than 13:00 UK time that day. After each successful send, it sets `last_sent_at` to the current time.
+- A failed send does not update `last_sent_at`, so the next call in the window retries that device.
+
+This means the scheduler can call the endpoint many times during the window: each device receives the reminder once, and a late or dropped call is covered by the next one.
+
+`last_sent_at` is added by `supabase/migrations/004_push_last_sent.sql`. The endpoint requests the column explicitly, so it returns `500` rather than sending if the migration has not been applied.
 
 ## Response
 
@@ -54,6 +56,7 @@ The endpoint checks whether the current UTC time falls within the target window 
   "sent": 42,
   "failed": 2,
   "cleaned_up": 2,
+  "already_sent": 3,
   "skipped": false
 }
 ```
@@ -63,7 +66,8 @@ The endpoint checks whether the current UTC time falls within the target window 
 | `sent` | `number` | Number of push messages successfully delivered |
 | `failed` | `number` | Number of push messages that failed with a retryable error |
 | `cleaned_up` | `number` | Number of subscriptions removed due to permanent failure (e.g., 410 Gone) |
-| `skipped` | `boolean` | Whether the send was skipped because the current time is outside the target window |
+| `already_sent` | `number` | Number of subscriptions not sent to because they already received this window's reminder |
+| `skipped` | `boolean` | Whether the send was skipped because the current time is outside the window |
 
 ### Error (401 Unauthorized)
 

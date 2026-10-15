@@ -145,19 +145,16 @@ self.addEventListener("push", (event) => {
   const tag =
     typeof data.tag === "string" ? data.tag : "familytodo-weekly-reminder";
 
+  // Always show a notification for a push: iOS cancels the subscription after
+  // pushes that show nothing. showNotification rejects if permission is missing.
   event.waitUntil(
-    (async () => {
-      if (Notification.permission !== "granted") {
-        return;
-      }
-      await self.registration.showNotification(title, {
-        body,
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
-        tag,
-        requireInteraction: false,
-      });
-    })(),
+    self.registration.showNotification(title, {
+      body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag,
+      requireInteraction: false,
+    }),
   );
 });
 

@@ -5,8 +5,6 @@
     requestNotificationPermission,
     isWeeklyNotificationEnabled,
     setWeeklyNotificationEnabled,
-    scheduleWeeklyNotification,
-    cancelWeeklyNotification,
     subscribeToPushNotifications,
     unsubscribeFromPushNotifications,
     isPushNotificationEnabled,
@@ -16,7 +14,6 @@
 
   let permission: NotificationPermission = 'default';
   let enabled = false;
-  let cancelNotification: (() => void) | null = null;
 
   async function toggleNotifications() {
     if (!enabled) {
@@ -26,8 +23,7 @@
         enabled = true;
         setWeeklyNotificationEnabled(true);
         setPushNotificationEnabled(true);
-        cancelNotification = scheduleWeeklyNotification();
-        // Subscribe to push notifications for closed-app delivery
+        // The weekly reminder is delivered by push, including when the app is closed
         const householdId = resolveHouseholdId();
         await subscribeToPushNotifications(householdId);
       }
@@ -35,8 +31,6 @@
       enabled = false;
       setWeeklyNotificationEnabled(false);
       setPushNotificationEnabled(false);
-      cancelWeeklyNotification();
-      cancelNotification = null;
       // Unsubscribe from push notifications
       await unsubscribeFromPushNotifications();
     }
@@ -46,14 +40,6 @@
     // Defer reading browser-only APIs until after mount to avoid SSR hydration mismatches.
     permission = getNotificationPermission();
     enabled = isWeeklyNotificationEnabled();
-
-    if (enabled && permission === 'granted') {
-      cancelNotification = scheduleWeeklyNotification();
-    }
-
-    return () => {
-      cancelWeeklyNotification();
-    };
   });
 </script>
 
