@@ -26,7 +26,25 @@
 			return;
 		}
 
-		void navigator.serviceWorker.register('/service-worker.js');
+		// Reload once when a newly deployed service worker takes over, so the
+		// open app switches to the new build instead of keeping the old one.
+		const hadController = Boolean(navigator.serviceWorker.controller);
+		let reloading = false;
+		navigator.serviceWorker.addEventListener('controllerchange', () => {
+			if (!hadController || reloading) return;
+			reloading = true;
+			window.location.reload();
+		});
+
+		void navigator.serviceWorker
+			.register('/service-worker.js', { updateViaCache: 'none' })
+			.then((registration) => {
+				// Installed PWAs can stay open for days; check for updates when
+				// the app comes back to the foreground.
+				document.addEventListener('visibilitychange', () => {
+					if (document.visibilityState === 'visible') void registration.update();
+				});
+			});
 	});
 </script>
 
