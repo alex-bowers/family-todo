@@ -40,6 +40,11 @@
   });
 </script>
 
+<svelte:head>
+  <title>FamilyToDo | Shared lists</title>
+  <meta name="description" content="Shared family to-do lists for groceries, chores and everyday tasks." />
+</svelte:head>
+
 <main>
   <div class="header">
     <h1 class="heading">FamilyToDo</h1>
@@ -74,11 +79,11 @@
 
 <style>
   main {
-    padding: 1rem;
+    padding: 2rem 1.25rem 3rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 1.75rem;
   }
 
   .header {
@@ -96,38 +101,40 @@
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
   .hydration-indicator {
-    width: 12px;
-    height: 12px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
-    background: #e5e7eb;
+    background: var(--line);
     transition: background-color 0.2s ease;
   }
 
   .hydration-indicator.active {
-    background: #10b981;
+    background: var(--moss);
   }
 
   .layout {
     display: grid;
-    gap: 1rem;
-    grid-template-columns: minmax(16rem, 24rem) 1fr;
+    gap: 1.5rem;
+    grid-template-columns: minmax(16rem, 28rem) 1fr;
   }
 
   .migration-warning {
-    border: 1px solid #d97706;
-    background: #fffbeb;
-    color: #92400e;
-    border-radius: 0.5rem;
-    padding: 0.75rem;
+    border: 1px solid var(--line);
+    background: var(--ochre-soft);
+    color: var(--ochre);
+    border-radius: var(--radius-sm);
+    padding: 0.875rem 1rem;
+    margin: 0;
   }
 
   @media (max-width: 800px) {
     .layout {
       grid-template-columns: 1fr;
+      width: 100%;
     }
   }
 </style>

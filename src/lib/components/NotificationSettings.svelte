@@ -67,36 +67,39 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     padding: 0;
     border: none;
     background: transparent;
-    color: #9ca3af;
+    color: var(--stone);
     cursor: pointer;
     border-radius: 50%;
     transition: color 0.2s ease, background-color 0.2s ease;
   }
 
   .bell:hover {
-    background: #f3f4f6;
+    background: var(--sand);
   }
 
   .bell:focus-visible {
-    outline: 2px solid #0b5fff;
-    outline-offset: 1px;
+    outline: 2px solid var(--moss);
+    outline-offset: 2px;
   }
 
   .bell svg {
     width: 20px;
     height: 20px;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .bell.on {
-    color: #10b981;
+    color: var(--moss);
   }
 
   .bell.blocked {
-    color: #ef4444;
+    color: var(--clay);
   }
 </style>

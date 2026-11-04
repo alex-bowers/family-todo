@@ -31,6 +31,11 @@ test.describe("List create/delete flow", () => {
     test("creates two lists and deletes one with selection fallback", async ({
         page,
     }) => {
+        await expect(page).toHaveTitle("FamilyToDo | Shared lists");
+        await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+            "content",
+            "Shared family to-do lists for groceries, chores and everyday tasks.",
+        );
         // Wait for the page to be fully loaded
         await expect(page.getByTestId("hydrated")).toHaveAttribute(
             "aria-label",
@@ -105,6 +110,7 @@ test.describe("List create/delete flow", () => {
         // Should navigate to the list detail page
         await page.waitForURL(/\/lists\/.+/);
         await expect(page.getByText(listName)).toBeVisible(slowExpect);
+        await expect(page).toHaveTitle(`${listName} | FamilyToDo`);
     });
 
     // Test list deletion with confirmation (User Story 1)
@@ -138,6 +144,9 @@ test.describe("List create/delete flow", () => {
         await expect(
             page.getByRole("heading", { name: "FamilyToDo" }),
         ).toBeVisible(slowExpect);
+        await expect(
+            page.getByRole("button", { name: `Open list ${listName}` }),
+        ).toHaveCount(0);
     });
 
     // Test list deletion cancellation (User Story 1)

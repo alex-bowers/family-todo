@@ -24,6 +24,7 @@
   let hydrated = false;
   let syncStatus = 'online synced';
   let online = true;
+  let deleteError = '';
   let stopRealtime = () => {};
 
   async function sendQueuedMutation(mutation) {
@@ -122,13 +123,19 @@
       return; // User cancelled
     }
 
+    deleteError = '';
+    if (!listId) {
+      deleteError = 'Could not find the list. Please return to your lists.';
+      return;
+    }
+
     try {
-      await listRepository.deleteList(listId);
+      await listRepository.deleteList(listId, householdId);
       // Redirect to home page after successful deletion
       goto('/');
     } catch (error) {
       console.error('Failed to delete list', error);
-      // TODO: Show error to user
+      deleteError = 'Could not delete the list. Please try again.';
     }
   }
 
@@ -172,6 +179,11 @@
   });
 </script>
 
+<svelte:head>
+  <title>{listTitle ? `${listTitle} | FamilyToDo` : 'List details | FamilyToDo'}</title>
+  <meta name="description" content="Manage tasks in this shared FamilyToDo list." />
+</svelte:head>
+
 <main>
   <div class="actions">
     <div class="action-group">
@@ -197,7 +209,9 @@
       Delete List
     </button>
   </div>
-  <p class="undo-status" role="status" data-testid="undo-status">{$itemState.undoMessage ?? ''}</p>
+  {#if deleteError}
+    <p class="delete-error" role="alert">{deleteError}</p>
+  {/if}
   <div class="header">
     <h1>{listTitle || 'List Details'}</h1>
     <div
@@ -209,6 +223,9 @@
     ></div>
   </div>
   <span data-testid="sync-status" role="status" aria-live="polite">{syncStatus}</span>
+  {#if $itemState.undoMessage}
+    <p class="undo-status" role="status" data-testid="undo-status">{$itemState.undoMessage}</p>
+  {/if}
 
   <TodoItemList
     items={$itemState.items}
@@ -225,24 +242,32 @@
   main {
     padding: 1rem;
     display: grid;
-    gap: 1rem;
+    gap: 1.25rem;
   }
 
   .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.75rem;
     justify-content: space-between;
+    align-items: center;
   }
 
   .action-group {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
   .undo-status {
     margin: 0;
-    min-height: 1.5em;
+    color: var(--stone);
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .delete-error {
+    margin: 0;
+    color: var(--clay);
   }
 
   .header {
@@ -252,45 +277,60 @@
     gap: 0.75rem;
   }
 
+  .header h1 {
+    margin: 0;
+  }
+
+  [data-testid='sync-status'] {
+    justify-self: center;
+    color: var(--stone);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
   .hydration-indicator {
-    width: 12px;
-    height: 12px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
-    background: #e5e7eb;
+    background: var(--line);
     transition: background-color 0.2s ease;
   }
 
   .hydration-indicator.active {
-    background: #10b981;
+    background: var(--moss);
   }
 
   .button {
-    border: none;
-    border-radius: 0.25rem;
-    padding: 0.5rem 1rem;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 0.625rem 1.125rem;
     cursor: pointer;
     font-family: inherit;
     font-size: inherit;
+    font-weight: 500;
     text-decoration: none;
     display: inline-block;
   }
 
   .button.primary {
-    background-color: #3b82f6;
-    color: white;
+    background-color: var(--moss);
+    color: var(--moss-ink);
   }
 
   .button.primary:hover {
-    background-color: #2563eb;
+    background-color: var(--moss-strong);
   }
 
   .button.secondary {
-    background-color: #e5e7eb;
-    color: #111827;
+    background-color: var(--sand);
+    border-color: var(--line);
+    color: var(--sumi);
   }
 
   .button.secondary:hover:not(:disabled) {
-    background-color: #d1d5db;
+    border-color: var(--stone);
   }
 
   .button:disabled {
@@ -299,11 +339,13 @@
   }
 
   .button.danger {
-    background-color: #dc2626;
-    color: white;
+    background-color: transparent;
+    border-color: var(--clay);
+    color: var(--clay);
   }
 
   .button.danger:hover {
-    background-color: #b91c1c;
+    background-color: var(--clay);
+    color: var(--clay-ink);
   }
 </style>

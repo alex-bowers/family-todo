@@ -1,0 +1,116 @@
+/* Japandi theme: warm paper, stone and moss. Every colour in the app comes from these tokens. */
+:root {
+  --washi: #f4f0e8; /* page background */
+  --paper: #fbf9f4; /* panels, inputs */
+  --sand: #ece6da; /* secondary buttons, hover */
+  --sumi: #2e2c28; /* text */
+  --stone: #6e685e; /* muted text, icons */
+  --line: #e2dbcf; /* hairlines, borders */
+  --moss: #5a6b4f; /* primary accent */
+  --moss-strong: #4c5c42; /* primary hover */
+  --moss-soft: #e3e8dc; /* selected / highlighted */
+  --moss-ink: #fbf9f4; /* text on moss */
+  --oak: #8a6a47; /* small warm accents */
+  --clay: #9c4f3c; /* danger, errors */
+  --clay-ink: #fbf9f4;
+  --ochre-soft: #f3e9d6; /* notice background */
+  --ochre: #7a5a22; /* notice text */
+
+  --font-body: 'Zen Kaku Gothic New', 'Hiragino Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius-sm: 10px;
+  --radius-lg: 16px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --washi: #1c1b19;
+    --paper: #252320;
+    --sand: #2f2c28;
+    --sumi: #e9e4da;
+    --stone: #a39c90;
+    --line: #36332e;
+    --moss: #9db08c;
+    --moss-strong: #b1c2a1;
+    --moss-soft: #2f3629;
+    --moss-ink: #1c1b19;
+    --oak: #c9a47e;
+    --clay: #d98e78;
+    --clay-ink: #1c1b19;
+    --ochre-soft: #332b1d;
+    --ochre: #e0c48e;
+    color-scheme: dark;
+  }
+}
+
+html {
+  background: var(--washi);
+}
+
+body {
+  margin: 0;
+  background: var(--washi);
+  color: var(--sumi);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: 1.75rem;
+}
+
+h2 {
+  font-size: 1.2rem;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+a {
+  color: var(--moss);
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+:focus-visible {
+  outline: 2px solid var(--moss);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  button,
+  a,
+  input {
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+}

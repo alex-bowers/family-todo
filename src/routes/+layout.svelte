@@ -1,4 +1,5 @@
 <script>
+	import '../app.css';
 	import { onMount } from 'svelte';
 	import { dev } from '$app/environment';
 	import PwaInstallPrompt from '$lib/components/PwaInstallPrompt.svelte';
@@ -37,7 +38,9 @@
 <style>
 	.shell {
 		display: grid;
+		max-width: 56rem;
 		margin: 0 auto;
-		font-family: system-ui, sans-serif;
+		min-height: 100vh;
+		align-content: start;
 	}
 </style>

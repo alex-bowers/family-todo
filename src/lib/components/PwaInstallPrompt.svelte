@@ -50,21 +50,28 @@
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        padding: 1rem;
-        background: #f8faf9;
+        padding: 1rem 1.25rem;
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+        color: var(--sumi);
     }
     .install-btn {
-        background: #fff;
-        border-radius: 1rem;
-        border: 1px solid #1f2937;
+        background: var(--moss);
+        color: var(--moss-ink);
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--moss);
         font-size: 1rem;
-        font-weight: 600;
-        padding: 0.5rem 1rem;
+        font-weight: 500;
+        padding: 0.5rem 1.125rem;
         width: fit-content;
     }
 
+    .install-btn:hover {
+        background: var(--moss-strong);
+    }
+
     .install-btn:focus-visible {
-        outline: 3px solid #0b5fff;
-        outline-offset: 1px;
+        outline: 2px solid var(--moss);
+        outline-offset: 2px;
     }
 </style>
