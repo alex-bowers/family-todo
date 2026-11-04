@@ -7,7 +7,13 @@ const APP_CACHE = `familytodo-app-${version}`;
 
 // Hashed build output (JS/CSS) is immutable, so it is safe to serve cache-first.
 const IMMUTABLE_ASSETS = new Set(build);
-const PRECACHE = [...build, ...files.filter((f) => !f.startsWith("/screenshots/")), "/"];
+// Static files and the start page are nice to have offline but must never
+// block install: one 404 (e.g. Cloudflare's `_headers`, which is never served)
+// would make cache.addAll reject and leave the old worker in charge forever.
+const OPTIONAL_PRECACHE = [
+  "/",
+  ...files.filter((f) => !f.startsWith("/screenshots/") && !f.split("/").pop()!.startsWith("_")),
+];
 
 // Household ID and Supabase config for pushsubscriptionchange handling
 let householdId: string | null = null;
@@ -75,8 +81,15 @@ async function deleteSubscriptionFromSupabase(endpoint: string): Promise<void> {
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(APP_CACHE).then((cache) => {
-      return cache.addAll(PRECACHE);
+    caches.open(APP_CACHE).then(async (cache) => {
+      await cache.addAll(build);
+      await Promise.all(
+        OPTIONAL_PRECACHE.map((path) =>
+          cache.add(path).catch((error) => {
+            console.warn("Service worker could not precache", path, error);
+          }),
+        ),
+      );
     }),
   );
   self.skipWaiting();
