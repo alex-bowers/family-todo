@@ -158,12 +158,7 @@
       },
       onPoll: async () => {
         if (navigator.onLine) {
-          await store.load();
-        }
-      },
-      onRealtimeEvent: async () => {
-        if (navigator.onLine) {
-          await store.load();
+          await store.load({ background: true });
         }
       },
       pollMs: 10000

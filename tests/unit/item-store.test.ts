@@ -28,6 +28,35 @@ describe("ItemStore transitions", () => {
     expect(snapshot.items[0].description).toBe("Buy milk");
   });
 
+  it("keeps item actions available while refreshing in the background", async () => {
+    const repository = {
+      getItems: vi.fn(async () => [makeItem()]),
+      createItem: vi.fn(),
+      updateItemText: vi.fn(),
+      setItemCompletion: vi.fn(),
+      deleteItem: vi.fn(),
+      revertItem: vi.fn(),
+    };
+    const store = new ItemStore(FIXTURE_LIST_ID, repository);
+    await store.load();
+
+    let resolveRefresh!: (items: ReturnType<typeof makeItem>[]) => void;
+    repository.getItems.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRefresh = resolve;
+        }),
+    );
+
+    const refresh = store.load({ background: true });
+    expect(store.getSnapshot().loading).toBe(false);
+
+    resolveRefresh([makeItem({ description: "Buy oat milk" })]);
+    await refresh;
+    expect(store.getSnapshot().items[0].description).toBe("Buy oat milk");
+    expect(store.getSnapshot().loading).toBe(false);
+  });
+
   it("orders loaded items with incomplete first then alphabetical", async () => {
     const repository = {
       getItems: vi.fn(async () => [

@@ -221,7 +221,7 @@
                 on:click={() => handleUseExistingSuggestion(match)}
                 aria-label={`Use existing item ${match.item.description}`}
               >
-                Use existing "{match.item.description}"
+                {match.item.description}
               </button>
             </li>
           {/each}

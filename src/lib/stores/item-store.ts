@@ -126,12 +126,16 @@ export class ItemStore {
     }));
   }
 
-  async load(): Promise<void> {
-    this.state.update((current) => ({
-      ...current,
-      loading: true,
-      error: null,
-    }));
+  async load({
+    background = false,
+  }: { background?: boolean } = {}): Promise<void> {
+    if (!background) {
+      this.state.update((current) => ({
+        ...current,
+        loading: true,
+        error: null,
+      }));
+    }
 
     try {
       const items = await this.repository.getItems(this.listId);
@@ -139,12 +143,20 @@ export class ItemStore {
       this.state.update((current) => ({
         ...current,
         items: sortItemsForDisplay(items),
-        loading: false,
+        loading: background ? current.loading : false,
         error: null,
         undo,
       }));
     } catch (error) {
-      this.setError(error);
+      if (background) {
+        this.state.update((current) => ({
+          ...current,
+          error:
+            error instanceof Error ? error.message : "Unexpected item error",
+        }));
+      } else {
+        this.setError(error);
+      }
     }
   }
 
