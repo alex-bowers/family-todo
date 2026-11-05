@@ -4,7 +4,7 @@ import {
   FIXTURE_ITEM_ID,
   FIXTURE_LIST_ID,
   makeItem,
-} from "./fixtures/hasura-fixtures";
+} from "./fixtures/data-fixtures";
 
 const FIXTURE_HOUSEHOLD_ID = "11111111-1111-1111-1111-111111111111";
 

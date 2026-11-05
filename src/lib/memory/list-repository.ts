@@ -7,7 +7,10 @@ import {
     type UUID,
 } from "$lib/memory/types";
 import { DELETE_LIST, GET_LISTS, CREATE_LIST } from "$lib/graphql/operations";
-import { hasuraClient, type HasuraClient } from "$lib/graphql/client";
+import {
+    supabaseClient,
+    type SupabaseDataClient,
+} from "$lib/graphql/client";
 
 interface GetListsResponse {
     todo_lists: SupabaseListRow[];
@@ -35,7 +38,9 @@ function nonDeleted(lists: TodoList[]): TodoList[] {
 }
 
 export class ListRepository {
-    constructor(private readonly client: HasuraClient | null = hasuraClient) {}
+    constructor(
+        private readonly client: SupabaseDataClient | null = supabaseClient,
+    ) {}
 
     private readLocal(householdId: UUID): TodoList[] {
         return cacheStore.readSnapshot(householdId)?.lists ?? [];

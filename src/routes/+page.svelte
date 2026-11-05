@@ -7,7 +7,7 @@
   import { ListStore } from '$lib/stores/list-store';
   import { SyncEngine } from '$lib/sync/engine';
   import { setupListRefreshOnReconnect } from '$lib/sync/list-sync';
-  import { hasuraConfigured } from '$lib/graphql/client';
+  import { supabaseConfigured } from '$lib/graphql/client';
 
   const householdId = resolveHouseholdId();
   const deviceId = resolveDeviceId();
@@ -19,7 +19,7 @@
 
   const listState = store;
   let hydrated = false;
-  const backendConfigured = hasuraConfigured();
+  const backendConfigured = supabaseConfigured();
 
   onMount(async () => {
     hydrated = true;

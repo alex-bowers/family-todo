@@ -4,26 +4,22 @@ A simple, cross-device todo list app built with SvelteKit and Supabase.
 
 This has been created as a SDD test using [Spec Kit](https://github.com/github/spec-kit).
 
-## Development Setup
+## Repository History
 
-### Option A: VS Code Dev Container (Recommended)
+Supabase is the supported backend for the current application. The ordered
+feature records in [`specs/`](specs/) show how the repository was specified,
+planned, tested, and evolved with GitHub Spec Kit:
 
-The fastest way to get started with a fully configured environment:
+- [`specs/001-family-todo-pwa`](specs/001-family-todo-pwa/) — initial application
+- [`specs/002-swap-hasura-supabase`](specs/002-swap-hasura-supabase/) — backend transition
+- [`specs/003-improve-list-usability`](specs/003-improve-list-usability/) — list usability
+- [`specs/004-safer-list-management`](specs/004-safer-list-management/) — safer list management
+- [`specs/005-docker-devcontainer`](specs/005-docker-devcontainer/) — development container
+- [`specs/006-push-weekly-reminders`](specs/006-push-weekly-reminders/) — push reminders
+- [`specs/007-clean-repository`](specs/007-clean-repository/) — repository cleanup
 
-1. Install [VS Code](https://code.visualstudio.com/) and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-2. Clone this repository and open it in VS Code
-3. When prompted, click **"Reopen in Container"**
-4. Wait for the container to build (~2–5 minutes first time)
-5. Run `pnpm run dev` — the app is available at `http://localhost:5173`
-
-See [Dev Container Quickstart](specs/005-docker-devcontainer/quickstart.md) for full details including Supabase local setup, troubleshooting, and test commands.
-
-### Option B: Local Development
-
-If you prefer to run directly on your host machine:
-
-1. Install dependencies: `pnpm install`
-2. Run development server: `pnpm run dev`
-3. Run tests: `pnpm test`
-
-See [Testing Documentation](docs/testing.md) for more information about running tests and known issues.
+Older feature records may mention Hasura or migration tooling because they
+document earlier decisions. Those references are historical; they are not
+required for current setup or operation. Spec Kit configuration and governance
+are kept in [`.specify/`](.specify/) and the agent definitions in
+[`.github/agents/`](.github/agents/).

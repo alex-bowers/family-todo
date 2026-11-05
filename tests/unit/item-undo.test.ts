@@ -6,7 +6,7 @@ import {
   isItemUndoExpired,
   isItemUndoRecord,
 } from "$lib/stores/item-undo";
-import { makeItem } from "../contract/fixtures/hasura-fixtures";
+import { makeItem } from "../contract/fixtures/data-fixtures";
 
 const RECORDED_AT = new Date("2026-04-17T00:00:00.000Z");
 

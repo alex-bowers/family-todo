@@ -7,12 +7,11 @@
     setWeeklyNotificationEnabled,
     subscribeToPushNotifications,
     unsubscribeFromPushNotifications,
-    isPushNotificationEnabled,
     setPushNotificationEnabled,
   } from '$lib/utils/notifications';
   import { resolveHouseholdId } from '$lib/memory/household';
 
-  let permission: NotificationPermission = 'default';
+  let permission = 'default';
   let enabled = false;
 
   async function toggleNotifications() {

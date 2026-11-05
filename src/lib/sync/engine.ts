@@ -1,7 +1,10 @@
 import type { PendingMutation, SyncSnapshot, UUID } from "$lib/memory/types";
 import { cacheStore } from "$lib/memory/cache";
 import { GET_CHANGES_SINCE } from "$lib/graphql/operations";
-import { hasuraClient, hasuraConfigured } from "$lib/graphql/client";
+import {
+  supabaseClient,
+  supabaseConfigured,
+} from "$lib/graphql/client";
 
 interface ChangesSincePayload {
   changedLists: SyncSnapshot["lists"];
@@ -40,7 +43,8 @@ export class SyncEngine {
     const cursor = cacheStore.readCursor(this.householdId);
     const since = cursor?.lastSyncedAt ?? new Date(0).toISOString();
 
-    if (!hasuraConfigured()) {
+    const client = supabaseClient;
+    if (!supabaseConfigured() || !client) {
       const fallback: SyncSnapshot = {
         lists: currentSnapshot?.lists ?? [],
         items: currentSnapshot?.items ?? [],
@@ -50,7 +54,7 @@ export class SyncEngine {
       return fallback;
     }
 
-    const data = await hasuraClient.request<ChangesSincePayload>(
+    const data = await client.request<ChangesSincePayload>(
       GET_CHANGES_SINCE,
       {
         householdId: this.householdId,

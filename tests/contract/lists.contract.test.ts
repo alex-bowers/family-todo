@@ -4,7 +4,7 @@ import {
   FIXTURE_HOUSEHOLD_ID,
   FIXTURE_LIST_ID,
   makeList,
-} from "./fixtures/hasura-fixtures";
+} from "./fixtures/data-fixtures";
 
 describe("List repository contract", () => {
   beforeEach(() => {

@@ -54,3 +54,10 @@ This is a known issue with Vite-based SvelteKit projects where the test runner d
 ## Test Environment
 
 Tests run in a Node.js environment with mocked browser APIs where necessary.
+
+The end-to-end suite uses the configured test environment and may create or
+clear test data. Run it only against a disposable test project; never point the
+cleanup or test-data commands at production or a shared environment.
+
+There are no current migration or parity commands to run. Supabase migration
+files remain schema history and are not rewritten as part of normal testing.

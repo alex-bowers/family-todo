@@ -293,12 +293,10 @@ export class SupabaseDataClient {
   }
 }
 
-export const hasuraClient = hasuraConfigured()
+export const supabaseClient = supabaseConfigured()
   ? new SupabaseDataClient()
   : null;
 
-export type HasuraClient = SupabaseDataClient;
-
-export function hasuraConfigured(): boolean {
+export function supabaseConfigured(): boolean {
   return Boolean(getSupabaseClient());
 }
