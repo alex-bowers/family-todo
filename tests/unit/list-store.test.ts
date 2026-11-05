@@ -3,7 +3,7 @@ import { ListStore } from "$lib/stores/list-store";
 import {
   makeList,
   FIXTURE_HOUSEHOLD_ID,
-} from "../contract/fixtures/hasura-fixtures";
+} from "../contract/fixtures/data-fixtures";
 
 describe("ListStore transitions", () => {
   it("loads lists and auto-selects first list", async () => {

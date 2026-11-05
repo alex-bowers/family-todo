@@ -7,7 +7,7 @@ import {
   FIXTURE_ITEM_ID,
   FIXTURE_LIST_ID,
   makeItem,
-} from "./fixtures/hasura-fixtures";
+} from "./fixtures/data-fixtures";
 
 const ACTION_UPDATED_AT = "2026-04-17T00:05:00.000Z";
 const REVERT_FIELDS = {

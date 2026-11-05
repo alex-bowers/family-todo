@@ -17,9 +17,7 @@
     "test:unit:force": "vitest run --no-file-parallelism --teardown-timeout=1000 && exit 0",
     "test:e2e": "playwright test",
     "deploy:branch": "pnpm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch $(git rev-parse --abbrev-ref HEAD)",
-    "deploy:prod": "pnpm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch main",
-    "migration:dry-run": "tsx scripts/migration/migrate-hasura-to-supabase.ts --dry-run --output test-results/migration",
-    "migration:verify": "tsx scripts/migration/verify-parity.ts test-results/migration"
+    "deploy:prod": "pnpm run build && npx wrangler pages deploy .svelte-kit/cloudflare --project-name family-todo --branch main"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.3",

@@ -4,7 +4,7 @@ import {
   FIXTURE_ITEM_ID,
   FIXTURE_LIST_ID,
   makeItem,
-} from "../contract/fixtures/hasura-fixtures";
+} from "../contract/fixtures/data-fixtures";
 import { normalizeItemText } from "$lib/utils/item-text";
 import { sortItemsForDisplay } from "$lib/utils/item-ordering";
 import { getItemMatches } from "$lib/utils/item-matching";

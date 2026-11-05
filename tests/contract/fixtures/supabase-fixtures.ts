@@ -2,7 +2,7 @@ import {
   FIXTURE_HOUSEHOLD_ID,
   FIXTURE_ITEM_ID,
   FIXTURE_LIST_ID,
-} from "./hasura-fixtures";
+} from "./data-fixtures";
 
 export interface SupabaseListRow {
   id: string;

@@ -1,4 +1,7 @@
-import { hasuraClient, type HasuraClient } from "$lib/graphql/client";
+import {
+    supabaseClient,
+    type SupabaseDataClient,
+} from "$lib/graphql/client";
 import {
     CREATE_ITEM,
     DELETE_ITEM,
@@ -45,7 +48,7 @@ function activeSorted(items: TodoItem[]): TodoItem[] {
 export class ItemRepository {
     constructor(
         private readonly householdId: UUID,
-        private readonly client: HasuraClient | null = hasuraClient,
+        private readonly client: SupabaseDataClient | null = supabaseClient,
     ) {}
 
     private readLocal(): TodoItem[] {

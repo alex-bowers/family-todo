@@ -6,7 +6,7 @@ import {
   FIXTURE_ITEM_ID,
   FIXTURE_LIST_ID,
   makeItem,
-} from "../contract/fixtures/hasura-fixtures";
+} from "../contract/fixtures/data-fixtures";
 
 const AFTER_UPDATED_AT = "2026-04-17T00:05:00.000Z";
 const REVERTED_UPDATED_AT = "2026-04-17T00:06:00.000Z";
